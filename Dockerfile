@@ -78,16 +78,19 @@ WORKDIR /opt/drupal
 # Install Drupal and production dependencies only
 RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
-	composer create-project --no-interaction --no-dev --optimize-autoloader "drupal/cms" ./; \
+	composer create-project drupal/cms:^1 . --no-interaction --no-dev --optimize-autoloader; \
 	composer check-platform-reqs; \
 	# Remove composer after installation
 	rm -rf "$COMPOSER_HOME" /usr/local/bin/composer; \
-	# Remove unnecessary files
-	find . -name "*.txt" -o -name "*.md" -o -name ".git*" -o -name "composer.json" -o -name "composer.lock" | xargs rm -rf; \
+	# Remove unnecessary files for production
+	find . -name "*.txt" -o -name "*.md" -o -name ".git*" | grep -v robots.txt | xargs rm -rf 2>/dev/null || true; \
 	# Set proper permissions
 	chown -R www-data:www-data web/sites web/modules web/themes; \
 	chmod -R 755 web/sites/default; \
-	chmod 644 web/sites/default/default.settings.php
+	# Create default.settings.php if it doesn't exist
+	if [ -f web/sites/default/default.settings.php ]; then \
+		chmod 644 web/sites/default/default.settings.php; \
+	fi
 
 # Production stage
 FROM php:8.3-apache-bookworm

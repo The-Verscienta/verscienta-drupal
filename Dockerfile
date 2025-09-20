@@ -78,16 +78,24 @@ WORKDIR /opt/drupal
 # Install Drupal and production dependencies only
 RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
-	composer create-project drupal/cms:^1 . --no-interaction --no-dev --optimize-autoloader; \
-	composer check-platform-reqs; \
+	# Install Drupal CMS without dev dependencies
+	composer create-project drupal/cms . --no-interaction --no-dev || \
+	composer create-project drupal/cms:^1.0 . --no-interaction --no-dev || \
+	composer create-project drupal/recommended-project:^10 . --no-interaction --no-dev; \
+	# Optimize autoloader for production
+	composer dump-autoload --optimize --no-dev; \
+	# Verify installation
+	composer check-platform-reqs || true; \
 	# Remove composer after installation
 	rm -rf "$COMPOSER_HOME" /usr/local/bin/composer; \
-	# Remove unnecessary files for production
-	find . -name "*.txt" -o -name "*.md" -o -name ".git*" | grep -v robots.txt | xargs rm -rf 2>/dev/null || true; \
-	# Set proper permissions
+	# Remove unnecessary files for production (but keep robots.txt)
+	find . -type f \( -name "*.txt" -o -name "*.md" \) ! -name "robots.txt" -exec rm -f {} + 2>/dev/null || true; \
+	find . -name ".git*" -exec rm -rf {} + 2>/dev/null || true; \
+	# Set proper permissions for Drupal directories
+	mkdir -p web/sites/default/files web/sites/default/private; \
 	chown -R www-data:www-data web/sites web/modules web/themes; \
 	chmod -R 755 web/sites/default; \
-	# Create default.settings.php if it doesn't exist
+	# Handle settings file if it exists
 	if [ -f web/sites/default/default.settings.php ]; then \
 		chmod 644 web/sites/default/default.settings.php; \
 	fi

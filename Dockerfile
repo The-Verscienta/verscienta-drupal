@@ -71,7 +71,7 @@ RUN set -eux; \
 # Copy composer for build stage only
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 
-ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /opt/drupal
 
@@ -97,7 +97,7 @@ RUN set -eux; \
 	\
 	if command -v a2enmod; then \
 		a2enmod expires rewrite headers deflate; \
-		a2dismod status autoindex; \
+		a2dismod -f status autoindex; \
 	fi; \
 	\
 	savedAptMark="$(apt-mark showmanual)"; \

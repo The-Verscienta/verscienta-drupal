@@ -97,8 +97,7 @@ RUN set -eux; \
 	rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 # Copy composer for build stage only
-ARG COMPOSER_VERSION
-COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/local/bin/
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/
 
 ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_NO_INTERACTION=1 \

@@ -113,10 +113,10 @@ RUN set -eux; \
 	\
 	# Install Drupal recommended-project for better stability
 	echo "Installing Drupal recommended-project version ${DRUPAL_VERSION}..."; \
-	composer create-project drupal/cms . --no-interaction --no-dev --stability dev; \
+	composer create-project drupal/cms . --no-interaction --stability dev; \
 	\
 	# Optimize autoloader for production
-	composer dump-autoload --optimize --no-dev --classmap-authoritative; \
+	composer dump-autoload --optimize --classmap-authoritative; \
 	\
 	# Verify installation was successful
 	[ -d "web" ] || { echo "Drupal web directory not found"; exit 1; }; \

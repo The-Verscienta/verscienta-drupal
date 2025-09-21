@@ -236,9 +236,9 @@ RUN set -eux; \
 # Run as non-root user
 USER www-data
 
-# Health check
+# Health check - checks if Apache and PHP are responding
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-	CMD curl -f http://localhost/user/login || exit 1
+	CMD curl -f http://localhost/ || curl -f http://localhost/core/install.php || exit 1
 
 # Expose port
 EXPOSE 80

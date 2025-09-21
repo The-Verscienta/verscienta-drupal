@@ -109,12 +109,13 @@ RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
 	export COMPOSER_CACHE_DIR="$(mktemp -d)"; \
 	\
-	# Install Drupal recommended-project for better stability
-	echo "Installing Drupal cms"; \
-	composer create-project drupal/cms --no-interaction; \
+	# Install Drupal CMS with dev dependencies (required for drupal/cms)
+	echo "Installing Drupal CMS"; \
+	composer create-project drupal/cms . --no-interaction; \
 	\
-	# Optimize autoloader for production
-	composer dump-autoload --optimize --classmap-authoritative; \
+	# Remove dev dependencies after installation and optimize for production
+	composer install --no-dev --optimize-autoloader; \
+	composer dump-autoload --optimize --no-dev --classmap-authoritative; \
 	\
 	# Verify installation was successful
 	[ -d "web" ] || { echo "Drupal web directory not found"; exit 1; }; \

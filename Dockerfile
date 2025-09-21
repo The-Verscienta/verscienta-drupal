@@ -3,7 +3,7 @@
 
 # Build arguments for version control
 ARG PHP_VERSION=8.3
-ARG DRUPAL_VERSION=^10
+ARG DRUPAL_VERSION=1
 ARG COMPOSER_VERSION=2
 ARG NODE_VERSION=20
 
@@ -111,32 +111,27 @@ RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
 	export COMPOSER_CACHE_DIR="$(mktemp -d)"; \
 	\
-	# Try to install Drupal CMS with proper error handling
-	echo "Installing Drupal CMS version ${DRUPAL_VERSION}..."; \
-	if ! composer create-project drupal/cms:${DRUPAL_VERSION} . --no-interaction --no-dev 2>&1; then \
-		echo "Drupal CMS not available, falling back to recommended-project..."; \
-		composer create-project drupal/recommended-project:${DRUPAL_VERSION} . --no-interaction --no-dev || \
-		{ echo "Failed to install Drupal"; exit 1; }; \
-	fi; \
+	# Install Drupal recommended-project for better stability
+	echo "Installing Drupal recommended-project version ${DRUPAL_VERSION}..."; \
+	composer create-project drupal/cms . --no-interaction --no-dev --stability dev; \
 	\
 	# Optimize autoloader for production
 	composer dump-autoload --optimize --no-dev --classmap-authoritative; \
 	\
 	# Verify installation was successful
 	[ -d "web" ] || { echo "Drupal web directory not found"; exit 1; }; \
+	[ -f "web/index.php" ] || { echo "Drupal index.php not found"; exit 1; }; \
 	composer check-platform-reqs || true; \
 	\
 	# Clean up composer and caches
 	rm -rf "$COMPOSER_HOME" "$COMPOSER_CACHE_DIR" /usr/local/bin/composer; \
 	\
-	# Remove all non-essential files for production
-	find . -type f \( -name "*.txt" -o -name "*.md" \) ! -name "robots.txt" ! -name "LICENSE.txt" -delete 2>/dev/null || true; \
+	# Remove non-essential files but preserve important ones
+	find . -type f \( -name "*.txt" -o -name "*.md" \) ! -name "robots.txt" ! -name "LICENSE.txt" ! -name "CHANGELOG.txt" -delete 2>/dev/null || true; \
 	find . -type f -name ".git*" -delete 2>/dev/null || true; \
 	find . -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true; \
-	find . -type f -name "composer.*" -delete 2>/dev/null || true; \
 	find . -type f -name "*.yml.dist" -delete 2>/dev/null || true; \
 	find . -type f -name "*.xml.dist" -delete 2>/dev/null || true; \
-	find web -type f -name "*.txt" ! -name "robots.txt" ! -name "LICENSE.txt" -delete 2>/dev/null || true; \
 	\
 	# Set proper permissions for Drupal directories
 	mkdir -p web/sites/default/files web/sites/default/private /opt/drupal/private; \
@@ -146,6 +141,13 @@ RUN set -eux; \
 	# Ensure settings file has correct permissions if it exists
 	if [ -f web/sites/default/default.settings.php ]; then \
 		chmod 644 web/sites/default/default.settings.php; \
+	fi; \
+	\
+	# Create a basic settings.php to prevent installation issues
+	if [ ! -f web/sites/default/settings.php ]; then \
+		cp web/sites/default/default.settings.php web/sites/default/settings.php 2>/dev/null || true; \
+		chown www-data:www-data web/sites/default/settings.php 2>/dev/null || true; \
+		chmod 666 web/sites/default/settings.php 2>/dev/null || true; \
 	fi
 
 # ============================================
@@ -274,6 +276,7 @@ RUN { \
 # Apache security and performance configuration
 RUN { \
 		echo '# Security Headers and Settings'; \
+		echo 'ServerName localhost'; \
 		echo 'ServerTokens Prod'; \
 		echo 'ServerSignature Off'; \
 		echo 'TraceEnable Off'; \

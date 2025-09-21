@@ -124,8 +124,11 @@ RUN set -eux; \
 	[ -d "vendor/symfony/yaml" ] || { echo "Symfony YAML not found, installing..."; composer require symfony/yaml; }; \
 	composer check-platform-reqs || true; \
 	\
-	# Clean up composer caches and remove composer binary
-	rm -rf "$COMPOSER_HOME" "$COMPOSER_CACHE_DIR" /usr/local/bin/composer; \
+	# Install Drush for Drupal management
+	composer require drush/drush --no-interaction; \
+	\
+	# Clean up only composer caches, keep composer and drush binaries
+	rm -rf "$COMPOSER_HOME" "$COMPOSER_CACHE_DIR"; \
 	\
 	# Remove non-essential files but preserve important ones
 	# IMPORTANT: Keep composer.json and composer.lock for proper autoloading
@@ -198,6 +201,9 @@ RUN set -eux; \
 # Copy PHP extensions from builder stage
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=builder /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
+
+# Copy Composer binary from builder stage for production management
+COPY --from=builder /usr/local/bin/composer /usr/local/bin/composer
 
 # Production-optimized PHP configuration
 RUN { \
@@ -355,6 +361,10 @@ COPY --from=builder --chown=www-data:www-data /opt/drupal /opt/drupal
 
 WORKDIR /opt/drupal
 
+# Add vendor binaries (including Drush) to PATH
+ENV PATH="/opt/drupal/vendor/bin:${PATH}" \
+    COMPOSER_ALLOW_SUPERUSER=1
+
 # Create necessary directories and set final permissions
 RUN set -eux; \
 	# Create required directories
@@ -382,7 +392,12 @@ RUN set -eux; \
 	\
 	# Create custom error pages
 	echo "<!DOCTYPE html><html><head><title>503 Service Unavailable</title></head><body><h1>Service Temporarily Unavailable</h1></body></html>" > /opt/drupal/web/503.html; \
-	chown www-data:www-data /opt/drupal/web/503.html
+	chown www-data:www-data /opt/drupal/web/503.html; \
+	\
+	# Set permissions for Composer to work with www-data user
+	chmod +x /usr/local/bin/composer 2>/dev/null || true; \
+	mkdir -p /var/www/.composer; \
+	chown -R www-data:www-data /var/www/.composer
 
 # Switch to non-root user for security
 USER www-data

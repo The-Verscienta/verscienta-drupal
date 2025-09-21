@@ -3,7 +3,6 @@
 
 # Build arguments for version control
 ARG PHP_VERSION=8.3
-ARG DRUPAL_VERSION=1
 ARG COMPOSER_VERSION=2
 ARG NODE_VERSION=20
 
@@ -106,14 +105,13 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
 WORKDIR /opt/drupal
 
 # Install Drupal with error handling and optimization
-ARG DRUPAL_VERSION
 RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
 	export COMPOSER_CACHE_DIR="$(mktemp -d)"; \
 	\
 	# Install Drupal recommended-project for better stability
-	echo "Installing Drupal recommended-project version ${DRUPAL_VERSION}..."; \
-	composer create-project drupal/cms . --no-interaction --stability dev; \
+	echo "Installing Drupal cms"; \
+	composer create-project drupal/cms --no-interaction; \
 	\
 	# Optimize autoloader for production
 	composer dump-autoload --optimize --classmap-authoritative; \

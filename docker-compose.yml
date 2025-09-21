@@ -22,7 +22,7 @@ services:
 
       # Drupal settings
       DRUPAL_HASH_SALT: ${DRUPAL_HASH_SALT:-change-this-to-random-hash}
-      TRUSTED_HOST_PATTERNS: "^localhost$|^verscienta\.com$|^www\.verscienta\.com$"
+      TRUSTED_HOST_PATTERNS: "^localhost$|^verscienta\\.com$|^www\\.verscienta\\.com$"
 
     volumes:
       # Persistent storage for files and configuration

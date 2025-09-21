@@ -109,23 +109,26 @@ RUN set -eux; \
 	export COMPOSER_HOME="$(mktemp -d)"; \
 	export COMPOSER_CACHE_DIR="$(mktemp -d)"; \
 	\
-	# Install Drupal CMS with all dependencies
+	# Install Drupal CMS with all dependencies including dev
 	echo "Installing Drupal CMS"; \
 	composer create-project drupal/cms . --no-interaction; \
 	\
-	# For production, keep the dependencies but optimize autoloader
-	# Note: drupal/cms requires some "dev" packages to function properly
+	# Ensure all autoload files are generated properly
 	composer dump-autoload --optimize --classmap-authoritative; \
 	\
-	# Verify installation was successful
+	# Verify installation and critical components
 	[ -d "web" ] || { echo "Drupal web directory not found"; exit 1; }; \
 	[ -f "web/index.php" ] || { echo "Drupal index.php not found"; exit 1; }; \
+	[ -d "vendor" ] || { echo "Vendor directory not found"; exit 1; }; \
+	[ -f "vendor/autoload.php" ] || { echo "Autoload file not found"; exit 1; }; \
+	[ -d "vendor/symfony/yaml" ] || { echo "Symfony YAML not found, installing..."; composer require symfony/yaml; }; \
 	composer check-platform-reqs || true; \
 	\
-	# Clean up composer and caches
+	# Clean up composer caches and remove composer binary
 	rm -rf "$COMPOSER_HOME" "$COMPOSER_CACHE_DIR" /usr/local/bin/composer; \
 	\
 	# Remove non-essential files but preserve important ones
+	# IMPORTANT: Keep composer.json and composer.lock for proper autoloading
 	find . -type f \( -name "*.txt" -o -name "*.md" \) ! -name "robots.txt" ! -name "LICENSE.txt" ! -name "CHANGELOG.txt" -delete 2>/dev/null || true; \
 	find . -type f -name ".git*" -delete 2>/dev/null || true; \
 	find . -type d -name ".git" -exec rm -rf {} + 2>/dev/null || true; \

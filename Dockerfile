@@ -261,8 +261,10 @@ RUN { \
 		echo 'session.use_trans_sid=0'; \
 		echo 'allow_url_fopen=On'; \
 		echo 'allow_url_include=Off'; \
-		echo 'open_basedir=/opt/drupal:/tmp:/var/log/php'; \
-		echo 'disable_functions=exec,passthru,shell_exec,system,proc_open,popen,curl_exec,curl_multi_exec,parse_ini_file,show_source,phpinfo'; \
+		echo '; open_basedir disabled for Drush compatibility'; \
+		echo '; open_basedir=/opt/drupal:/tmp:/var/log/php'; \
+		echo '; Reduced disable_functions to allow Drush to work'; \
+		echo 'disable_functions=show_source,phpinfo'; \
 		echo 'enable_dl=Off'; \
 		echo 'assert.active=0'; \
 	} > /usr/local/etc/php/conf.d/01-security.ini

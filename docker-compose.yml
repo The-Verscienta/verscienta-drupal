@@ -1,109 +1,59 @@
+version: '3.8'
+
 services:
-  drupal:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        PHP_VERSION: 8.3
-        DRUPAL_VERSION: "^10"
-    container_name: verscienta-drupal
-    ports:
-      - "80:80"
+  postgres:
+    image: postgres:17.5-alpine
+    container_name: verscienta_postgres
     environment:
-      # Database connection settings
-      DB_HOST: mysql
-      DB_NAME: drupal
-      DB_USER: drupal
-      DB_PASSWORD: ${DB_PASSWORD:-drupalpass123}
-      DB_PORT: 3306
-      DB_DRIVER: mysql
-
-      # Drupal settings
-      DRUPAL_HASH_SALT: ${DRUPAL_HASH_SALT:-change-this-to-random-hash}
-      TRUSTED_HOST_PATTERNS: "^localhost$|^verscienta\\.com$|^www\\.verscienta\\.com$"
-
-    volumes:
-      # Persistent storage for files and configuration
-      - drupal-files:/opt/drupal/web/sites/default/files
-      - drupal-private:/opt/drupal/private
-      - drupal-config:/opt/drupal/config
-
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-    networks:
-      - drupal-network
-
-    restart: unless-stopped
-
-  mysql:
-    image: mysql:8.0
-    container_name: verscienta-mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass123}
-      MYSQL_DATABASE: drupal
-      MYSQL_USER: drupal
-      MYSQL_PASSWORD: ${DB_PASSWORD:-drupalpass123}
-
-    volumes:
-      - mysql-data:/var/lib/mysql
-      - ./mysql-init:/docker-entrypoint-initdb.d
-
+      POSTGRES_DB: verscienta_health
+      POSTGRES_USER: drupal_user
+      POSTGRES_PASSWORD: drupal_password
     ports:
-      - "3306:3306"
-
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - drupal-network
+      - verscienta_network
 
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-    restart: unless-stopped
-
-    command:
-      - --default-authentication-plugin=mysql_native_password
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --max_allowed_packet=256M
-      - --innodb_buffer_pool_size=256M
-
-  # Optional: Redis for caching
   redis:
     image: redis:7-alpine
-    container_name: verscienta-redis
-    networks:
-      - drupal-network
+    container_name: verscienta_redis
+    ports:
+      - "6379:6379"
     volumes:
-      - redis-data:/data
-    restart: unless-stopped
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
-
-  # Optional: Memcached for caching
-  memcached:
-    image: memcached:1.6-alpine
-    container_name: verscienta-memcached
+      - redis_data:/data
     networks:
-      - drupal-network
-    restart: unless-stopped
-    command: memcached -m 256
+      - verscienta_network
+
+  drupal:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: verscienta_drupal
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DRUPAL_DATABASE_HOST: postgres
+      DRUPAL_DATABASE_PORT: 5432
+      DRUPAL_DATABASE_NAME: verscienta_health
+      DRUPAL_DATABASE_USER: drupal_user
+      DRUPAL_DATABASE_PASSWORD: drupal_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+      - drupal_files:/var/www/html/web/sites/default/files
+    networks:
+      - verscienta_network
 
 volumes:
-  drupal-files:
-    driver: local
-  drupal-private:
-    driver: local
-  drupal-config:
-    driver: local
-  mysql-data:
-    driver: local
-  redis-data:
-    driver: local
+  postgres_data:
+  redis_data:
+  drupal_files:
 
 networks:
-  drupal-network:
+  verscienta_network:
     driver: bridge

@@ -1,0 +1,190 @@
+import Link from 'next/link';
+
+export const metadata = {
+  title: 'Terms of Service - Verscienta Health',
+  description: 'Terms of Service for Verscienta Health - Read our terms and conditions for using our platform.',
+};
+
+export default function TermsPage() {
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-serif font-bold text-earth-800 mb-4">
+          Terms of Service
+        </h1>
+        <p className="text-sage-700">
+          Last updated: January 2025
+        </p>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
+        <div className="prose prose-earth max-w-none">
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Agreement to Terms</h2>
+            <p className="text-gray-700 leading-relaxed">
+              By accessing or using Verscienta Health ("the Service"), you agree to be bound
+              by these Terms of Service. If you do not agree to these terms, please do not
+              use our Service.
+            </p>
+          </section>
+
+          <section className="mb-8 bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+            <h2 className="text-xl font-serif font-bold text-yellow-800 mb-4 flex items-center gap-2">
+              <span>⚠️</span> Medical Disclaimer
+            </h2>
+            <p className="text-yellow-800 leading-relaxed">
+              <strong>IMPORTANT:</strong> The information provided on Verscienta Health is for
+              educational and informational purposes only. It is NOT intended to be a substitute
+              for professional medical advice, diagnosis, or treatment. Always seek the advice
+              of your physician or other qualified health provider with any questions you may
+              have regarding a medical condition. Never disregard professional medical advice
+              or delay in seeking it because of something you have read on this website.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Use of Service</h2>
+
+            <h3 className="text-lg font-semibold text-earth-700 mt-4 mb-2">Permitted Use</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              You may use the Service for lawful purposes only. You agree to:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 space-y-2">
+              <li>Use the Service only for personal, non-commercial purposes</li>
+              <li>Provide accurate information when creating an account</li>
+              <li>Maintain the security of your account credentials</li>
+              <li>Respect the intellectual property rights of others</li>
+            </ul>
+
+            <h3 className="text-lg font-semibold text-earth-700 mt-4 mb-2">Prohibited Activities</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              You may not:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 space-y-2">
+              <li>Use the Service for any illegal purpose</li>
+              <li>Attempt to gain unauthorized access to our systems</li>
+              <li>Interfere with or disrupt the Service</li>
+              <li>Scrape, harvest, or collect user data without consent</li>
+              <li>Impersonate another person or entity</li>
+              <li>Upload malicious code or content</li>
+              <li>Use the Service to provide medical advice to others</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Intellectual Property</h2>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              All content on Verscienta Health, including but not limited to text, graphics,
+              logos, images, and software, is the property of Verscienta Health or its content
+              suppliers and is protected by copyright and other intellectual property laws.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              You may not reproduce, distribute, modify, or create derivative works from any
+              content without our prior written consent.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">User Content</h2>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              By submitting content (reviews, comments, feedback) to our Service, you:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 space-y-2">
+              <li>Grant us a non-exclusive, royalty-free license to use, display, and distribute your content</li>
+              <li>Confirm that you own or have the right to submit the content</li>
+              <li>Agree that your content does not violate any third-party rights</li>
+              <li>Accept that we may remove content that violates these terms</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Third-Party Links</h2>
+            <p className="text-gray-700 leading-relaxed">
+              Our Service may contain links to third-party websites or services. We are not
+              responsible for the content, privacy policies, or practices of any third-party
+              sites. You access such links at your own risk.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Limitation of Liability</h2>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              To the fullest extent permitted by law, Verscienta Health shall not be liable for:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 space-y-2">
+              <li>Any indirect, incidental, special, or consequential damages</li>
+              <li>Any loss or damage arising from your reliance on information provided</li>
+              <li>Any health-related outcomes resulting from use of our Service</li>
+              <li>Service interruptions or data loss</li>
+              <li>Errors or omissions in content</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Disclaimer of Warranties</h2>
+            <p className="text-gray-700 leading-relaxed">
+              The Service is provided "as is" and "as available" without warranties of any kind,
+              either express or implied, including but not limited to warranties of merchantability,
+              fitness for a particular purpose, and non-infringement.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Indemnification</h2>
+            <p className="text-gray-700 leading-relaxed">
+              You agree to indemnify and hold harmless Verscienta Health and its officers,
+              directors, employees, and agents from any claims, damages, or expenses arising
+              from your use of the Service or violation of these Terms.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Termination</h2>
+            <p className="text-gray-700 leading-relaxed">
+              We reserve the right to terminate or suspend your access to the Service at any
+              time, without notice, for any reason, including violation of these Terms.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Changes to Terms</h2>
+            <p className="text-gray-700 leading-relaxed">
+              We may modify these Terms at any time. We will notify users of significant changes
+              by posting a notice on our website. Your continued use of the Service after changes
+              constitutes acceptance of the modified Terms.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Governing Law</h2>
+            <p className="text-gray-700 leading-relaxed">
+              These Terms shall be governed by and construed in accordance with applicable laws,
+              without regard to conflict of law principles.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-serif font-bold text-earth-800 mb-4">Contact Us</h2>
+            <p className="text-gray-700 leading-relaxed">
+              If you have questions about these Terms of Service, please contact us:
+            </p>
+            <div className="bg-earth-50 rounded-lg p-4 mt-4">
+              <p className="text-earth-800">
+                <strong>Verscienta Health</strong><br />
+                Email: <a href="mailto:legal@verscienta.health" className="text-earth-600 hover:text-earth-800">legal@verscienta.health</a>
+              </p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      {/* Back Link */}
+      <div className="text-center mt-8">
+        <Link href="/" className="text-sage-600 hover:text-sage-800 font-medium">
+          ← Back to Home
+        </Link>
+      </div>
+    </div>
+  );
+}

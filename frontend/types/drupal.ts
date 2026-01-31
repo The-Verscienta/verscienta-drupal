@@ -1,0 +1,432 @@
+/**
+ * TypeScript interfaces for Drupal entities
+ */
+
+export interface DrupalNode {
+  id: string;
+  type: string;
+  langcode: string;
+  status: boolean;
+  title: string;
+  created: string;
+  changed: string;
+  path: {
+    alias: string;
+    langcode: string;
+  };
+  body?: {
+    value: string;
+    format: string;
+    processed: string;
+  };
+}
+
+// Comprehensive Herb Entity
+export interface HerbEntity extends DrupalNode {
+  type: 'node--herb';
+
+  // Unique identifier
+  field_herb_id?: string;
+
+  // Botanical Information
+  field_scientific_name?: string;
+  field_common_names?: Array<{
+    field_name_text: string;
+    field_language: string;
+    field_region?: string;
+  }>;
+  field_family?: string;
+  field_genus?: string;
+  field_species?: string;
+  field_synonyms?: string[];
+  field_plant_type?: string;
+  field_native_region?: string[];
+  field_habitat?: string;
+  field_parts_used?: string[];
+  field_botanical_description?: string;
+  field_conservation_status?: string;
+  field_conservation_notes?: string;
+
+  // TCM Properties
+  field_tcm_properties?: {
+    field_tcm_taste?: string[];
+    field_tcm_temperature?: string;
+    field_tcm_meridians?: string[];
+    field_tcm_functions?: string;
+    field_tcm_category?: string;
+  };
+
+  // Medicinal Information
+  field_therapeutic_uses?: string;
+  field_western_properties?: string[];
+  field_active_constituents?: Array<{
+    field_compound_name: string;
+    field_compound_class?: string;
+    field_compound_percentage?: number;
+    field_compound_effects?: string;
+  }>;
+  field_pharmacological_effects?: string;
+  field_dosage_forms?: string[];
+  field_recommended_dosage?: Array<{
+    field_dosage_form: string;
+    field_dosage_amount: string;
+    field_dosage_frequency?: string;
+    field_dosage_population?: string;
+    field_dosage_notes?: string;
+  }>;
+  field_contraindications?: string;
+  field_drug_interactions?: Array<{
+    field_drug_name: string;
+    field_interaction_type: string;
+    field_interaction_description: string;
+  }>;
+  field_side_effects?: string;
+  field_toxicity_info?: {
+    field_toxicity_level?: string;
+    field_toxic_compounds?: string;
+    field_toxic_symptoms?: string;
+  };
+
+  // Cultural & Historical
+  field_traditional_american_uses?: string;
+  field_traditional_chinese_uses?: string;
+  field_native_american_uses?: string;
+  field_cultural_significance?: string;
+  field_ethnobotanical_notes?: string;
+  field_folklore?: string;
+
+  // Practical Information
+  field_preparation_methods?: Array<{
+    field_method_type: string;
+    field_method_instructions: string;
+    field_method_time?: string;
+  }>;
+  field_storage_requirements?: {
+    field_storage_conditions?: string;
+    field_shelf_life?: string;
+    field_storage_temperature?: string;
+  };
+  field_sourcing_info?: {
+    field_sourcing_type?: string;
+    field_organic_available?: boolean;
+    field_sustainable_harvest?: string;
+  };
+  field_commercial_availability?: string[];
+  field_regulatory_status?: Array<{
+    field_reg_country: string;
+    field_reg_status: string;
+    field_reg_notes?: string;
+  }>;
+
+  // Safety & Quality
+  field_quality_standards?: Array<{
+    field_standard_org: string;
+    field_standard_specs: string;
+  }>;
+  field_adulteration_risks?: Array<{
+    field_adulterant_name: string;
+    field_risks: string;
+  }>;
+  field_safety_warnings?: Array<{
+    field_warning_type: string;
+    field_warning_severity: string;
+    field_warning_description: string;
+  }>;
+  field_allergenic_potential?: string;
+
+  // Cross-references
+  field_related_species?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+  field_substitute_herbs?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+  field_conditions_treated?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+
+  // Metadata
+  field_peer_review_status?: string;
+  field_average_rating?: number;
+  field_review_count?: number;
+}
+
+export interface ModalityEntity extends DrupalNode {
+  type: 'node--modality';
+  field_excels_at: string[];
+  field_benefits: Record<string, any>;
+  field_conditions?: {
+    id: string;
+    type: string;
+  }[];
+}
+
+export interface ConditionEntity extends DrupalNode {
+  type: 'node--condition';
+  field_symptoms?: string[];
+  field_severity?: string;
+  field_modalities?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+    body?: {
+      value: string;
+      format: string;
+      processed: string;
+    };
+  }>;
+  field_related_herbs?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+}
+
+export interface PractitionerEntity extends DrupalNode {
+  type: 'node--practitioner';
+  field_name?: string;
+  field_practice_type?: 'solo' | 'group' | 'clinic' | 'hospital';
+  field_address?: string;
+  field_city?: string;
+  field_state?: string;
+  field_zip?: string;
+  field_zip_code?: string;
+  field_phone?: string;
+  field_email?: string;
+  field_website?: string;
+  field_latitude?: number;
+  field_longitude?: number;
+  field_credentials?: string;
+  field_bio?: string;
+  field_years_experience?: number;
+  field_accepting_patients?: boolean;
+  field_accepting_new_patients?: boolean;
+  field_modalities?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+}
+
+export interface SymptomEntity extends DrupalNode {
+  type: 'node--symptom';
+  field_category?: string;
+  field_related_conditions?: {
+    id: string;
+    type: string;
+  }[];
+}
+
+export interface ReviewEntity extends DrupalNode {
+  type: 'node--review';
+  field_rating?: number;
+  field_comment?: string;
+  field_reviewed_entity?: {
+    id: string;
+    type: string;
+  };
+}
+
+export interface GrokInsightEntity extends DrupalNode {
+  type: 'node--grok_insight';
+  field_analysis: {
+    symptoms?: string[];
+    recommendations?: Array<{
+      modality: string;
+      confidence: number;
+      reasoning: string;
+    }>;
+    follow_up_questions?: string[];
+  };
+}
+
+export type HerbRole = 'chief' | 'deputy' | 'assistant' | 'envoy';
+
+export interface HerbIngredient {
+  id: string;
+  type: string;
+  title: string;
+  field_quantity: number;
+  field_unit: string;
+  field_percentage?: number;
+  field_role?: HerbRole;
+  field_function?: DrupalTextField;  // What this herb does in the formula
+  field_notes?: DrupalTextField;     // Additional notes about this ingredient
+}
+
+// Drupal text field types
+export type DrupalTextField = string | {
+  value: string;
+  format: string | null;
+  processed?: string;
+} | null | undefined;
+
+export interface FormulaEntity extends DrupalNode {
+  type: 'node--formula';
+  field_formula_description?: DrupalTextField;
+  field_preparation_instructions?: DrupalTextField;
+  field_dosage?: DrupalTextField;
+  field_total_weight?: number;
+  field_total_weight_unit?: string;
+  field_use_cases?: string[];
+  field_herb_ingredients?: HerbIngredient[];
+  field_conditions?: {
+    id: string;
+    type: string;
+    title?: string;
+  }[];
+}
+
+export type ContributionType = 'clinical_note' | 'modification' | 'addition';
+export type ContributionStatus = 'pending' | 'approved' | 'rejected';
+export type ModificationAction = 'add' | 'remove' | 'modify';
+
+export interface HerbModification {
+  herb_id: string;
+  herb_title: string;
+  action: ModificationAction;
+  quantity?: number;
+  unit?: string;
+  role?: HerbRole;
+  function?: string;
+  rationale: string;  // Why this modification
+}
+
+export interface FormulaContribution extends DrupalNode {
+  type: 'node--formula_contribution';
+  field_contribution_type: ContributionType;
+  field_formula_reference: { id: string; type: string };
+  field_status: ContributionStatus;
+  field_clinical_note?: string;
+  field_context?: string;  // Context/indication for modifications
+  field_modifications?: HerbModification[];
+  uid: { id: string; name: string };
+}
+
+export function isFormulaContribution(entity: DrupalNode): entity is FormulaContribution {
+  return entity.type === 'node--formula_contribution';
+}
+
+export interface DrupalJsonApiResponse<T = DrupalNode> {
+  data: T | T[];
+  included?: DrupalNode[];
+  links?: {
+    self: {
+      href: string;
+    };
+    next?: {
+      href: string;
+    };
+    prev?: {
+      href: string;
+    };
+  };
+  meta?: {
+    count: number;
+  };
+}
+
+export interface DrupalMenuLink {
+  id: string;
+  title: string;
+  url: string;
+  enabled: boolean;
+  weight: number;
+  menu_name: string;
+  parent?: string;
+}
+
+// Additional types needed for exports
+export interface TaxonomyTerm {
+  id: string;
+  type: string;
+  name: string;
+  description?: string;
+  weight?: number;
+  parent?: {
+    id: string;
+    type: string;
+  };
+}
+
+export interface UserEntity {
+  id: string;
+  uid?: string;
+  name: string;
+  mail?: string;
+  roles?: string[];
+  status?: boolean;
+  created?: string;
+  access?: string;
+  field_first_name?: string;
+  field_last_name?: string;
+}
+
+// JSON:API response types
+export interface JsonApiResponse<T = DrupalNode> {
+  data: T;
+  included?: DrupalNode[];
+  links?: {
+    self: { href: string };
+    next?: { href: string };
+    prev?: { href: string };
+  };
+  meta?: Record<string, unknown>;
+}
+
+export interface JsonApiCollectionResponse<T = DrupalNode> {
+  data: T[];
+  included?: DrupalNode[];
+  links?: {
+    self: { href: string };
+    next?: { href: string };
+    prev?: { href: string };
+  };
+  meta?: {
+    count?: number;
+  };
+}
+
+export interface JsonApiError {
+  status: string;
+  title: string;
+  detail?: string;
+  source?: {
+    pointer?: string;
+    parameter?: string;
+  };
+}
+
+export interface EntityCollection<T = DrupalNode> {
+  items: T[];
+  total: number;
+  page: number;
+  perPage: number;
+}
+
+// Type guards
+export function isHerbEntity(entity: DrupalNode): entity is HerbEntity {
+  return entity.type === 'node--herb';
+}
+
+export function isModalityEntity(entity: DrupalNode): entity is ModalityEntity {
+  return entity.type === 'node--modality';
+}
+
+export function isConditionEntity(entity: DrupalNode): entity is ConditionEntity {
+  return entity.type === 'node--condition';
+}
+
+export function isPractitionerEntity(entity: DrupalNode): entity is PractitionerEntity {
+  return entity.type === 'node--practitioner';
+}
+
+export function isReviewEntity(entity: DrupalNode): entity is ReviewEntity {
+  return entity.type === 'node--review';
+}

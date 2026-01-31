@@ -1,0 +1,270 @@
+/**
+ * Grok AI Integration Library
+ * Uses xAI API for symptom analysis and recommendations
+ */
+
+const XAI_API_URL = process.env.XAI_API_URL || 'https://api.x.ai/v1';
+const XAI_API_KEY = process.env.XAI_API_KEY;
+
+export interface SymptomAnalysisRequest {
+  symptoms: string;
+  followUpAnswers?: Record<string, string>;
+  context?: {
+    age?: number;
+    gender?: string;
+    existingConditions?: string[];
+  };
+}
+
+export interface SymptomAnalysisResponse {
+  analysis: string;
+  recommendations: {
+    modalities: string[];
+    herbs: string[];
+    practitioners?: string[];
+  };
+  followUpQuestions?: FollowUpQuestion[];
+  disclaimer: string;
+}
+
+export interface FollowUpQuestion {
+  id: string;
+  question: string;
+  type: 'text' | 'choice' | 'number';
+  options?: string[];
+}
+
+/**
+ * Anonymize user data before sending to xAI
+ */
+function anonymizeData(data: SymptomAnalysisRequest): string {
+  // Remove any potentially identifying information
+  const anonymized = {
+    symptoms: data.symptoms,
+    context: data.context ? {
+      ageRange: data.context.age ? getAgeRange(data.context.age) : undefined,
+      gender: data.context.gender,
+      hasConditions: data.context.existingConditions && data.context.existingConditions.length > 0,
+    } : undefined,
+    followUpAnswers: data.followUpAnswers,
+  };
+
+  return JSON.stringify(anonymized);
+}
+
+function getAgeRange(age: number): string {
+  if (age < 18) return '0-17';
+  if (age < 30) return '18-29';
+  if (age < 45) return '30-44';
+  if (age < 60) return '45-59';
+  return '60+';
+}
+
+/**
+ * Call Grok AI for symptom analysis
+ */
+export async function analyzeSymptoms(
+  request: SymptomAnalysisRequest
+): Promise<SymptomAnalysisResponse> {
+  if (!XAI_API_KEY) {
+    throw new Error('XAI_API_KEY is not configured');
+  }
+
+  const systemPrompt = `You are a holistic health advisor assistant. Analyze the user's symptoms and provide recommendations for holistic treatments, modalities, and herbs.
+
+IMPORTANT:
+- Always include a medical disclaimer
+- Recommend evidence-based holistic approaches
+- Suggest 3-5 relevant modalities (e.g., acupuncture, yoga, massage)
+- Suggest 3-5 herbs that may help
+- Ask 2-3 relevant follow-up questions if needed
+- Be empathetic and supportive
+- Never diagnose medical conditions
+- Always recommend consulting healthcare professionals for serious symptoms
+
+Format your response as JSON with this structure:
+{
+  "analysis": "Brief analysis of symptoms",
+  "recommendations": {
+    "modalities": ["modality1", "modality2"],
+    "herbs": ["herb1", "herb2"]
+  },
+  "followUpQuestions": [
+    {
+      "id": "duration",
+      "question": "How long have you been experiencing these symptoms?",
+      "type": "choice",
+      "options": ["Less than 1 week", "1-4 weeks", "1-3 months", "More than 3 months"]
+    }
+  ],
+  "disclaimer": "Medical disclaimer text"
+}`;
+
+  const userPrompt = `User symptoms: ${request.symptoms}
+
+${request.context ? `Additional context:
+- Age range: ${request.context.age ? getAgeRange(request.context.age) : 'Not specified'}
+- Gender: ${request.context.gender || 'Not specified'}
+- Existing conditions: ${request.context.existingConditions?.join(', ') || 'None specified'}` : ''}
+
+${request.followUpAnswers ? `
+Follow-up answers:
+${Object.entries(request.followUpAnswers).map(([q, a]) => `- ${q}: ${a}`).join('\n')}` : ''}
+
+Please provide holistic health recommendations.`;
+
+  try {
+    const response = await fetch(`${XAI_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${XAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-beta',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 1500,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`xAI API error: ${error.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error('No response from Grok AI');
+    }
+
+    // Parse JSON response from Grok
+    try {
+      const parsed = JSON.parse(content);
+      return parsed as SymptomAnalysisResponse;
+    } catch (parseError) {
+      // If Grok didn't return valid JSON, create structured response
+      return {
+        analysis: content,
+        recommendations: {
+          modalities: [],
+          herbs: [],
+        },
+        disclaimer: 'This information is for educational purposes only and does not replace professional medical advice. Please consult with a qualified healthcare provider.',
+      };
+    }
+  } catch (error) {
+    console.error('Grok AI API error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate follow-up questions based on symptoms
+ */
+export async function generateFollowUpQuestions(
+  symptoms: string,
+  previousAnswers?: Record<string, string>
+): Promise<FollowUpQuestion[]> {
+  if (!XAI_API_KEY) {
+    throw new Error('XAI_API_KEY is not configured');
+  }
+
+  const systemPrompt = `You are a medical intake assistant. Generate 2-3 relevant follow-up questions to better understand the user's symptoms. Return ONLY a JSON array of questions.
+
+Format:
+[
+  {
+    "id": "unique_id",
+    "question": "Question text?",
+    "type": "choice" | "text" | "number",
+    "options": ["option1", "option2"] // only for choice type
+  }
+]`;
+
+  const userPrompt = `Symptoms: ${symptoms}
+
+${previousAnswers ? `Previous answers: ${JSON.stringify(previousAnswers)}` : ''}
+
+Generate follow-up questions to gather more information.`;
+
+  try {
+    const response = await fetch(`${XAI_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${XAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-beta',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.5,
+        max_tokens: 500,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate follow-up questions');
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content;
+
+    return JSON.parse(content) as FollowUpQuestion[];
+  } catch (error) {
+    console.error('Error generating follow-up questions:', error);
+    return [];
+  }
+}
+
+/**
+ * Summarize content (for modality/herb descriptions)
+ */
+export async function summarizeContent(
+  content: string,
+  maxLength: number = 200
+): Promise<string> {
+  if (!XAI_API_KEY) {
+    throw new Error('XAI_API_KEY is not configured');
+  }
+
+  try {
+    const response = await fetch(`${XAI_API_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${XAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'grok-beta',
+        messages: [
+          {
+            role: 'system',
+            content: `Summarize the following content in ${maxLength} characters or less. Be concise and informative.`,
+          },
+          { role: 'user', content },
+        ],
+        temperature: 0.3,
+        max_tokens: 150,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to summarize content');
+    }
+
+    const data = await response.json();
+    return data.choices[0]?.message?.content || content.substring(0, maxLength);
+  } catch (error) {
+    console.error('Error summarizing content:', error);
+    return content.substring(0, maxLength) + '...';
+  }
+}

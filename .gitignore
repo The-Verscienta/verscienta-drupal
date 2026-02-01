@@ -14,6 +14,7 @@ backend/web/sites/*/private/
 backend/web/sites/*/settings.local.php
 backend/web/sites/*/settings.php
 backend/web/.ht.router.php
+backend/.ddev
 
 # Next.js
 frontend/.next/

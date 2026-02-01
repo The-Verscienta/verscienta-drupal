@@ -1,0 +1,9 @@
+name: Verscienta Formula
+type: Content Type
+description: Provides the Formula content type for herbal formula management with herb ingredients, dosage, and preparation instructions.
+install:
+  - node
+  - text
+  - options
+  - paragraphs
+  - entity_reference_revisions

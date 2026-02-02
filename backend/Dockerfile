@@ -1,0 +1,109 @@
+# Drupal Backend Dockerfile for Coolify Deployment
+FROM php:8.3-apache
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libonig-dev \
+    libxml2-dev \
+    libpq-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip opcache \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
+
+# Enable Apache modules
+RUN a2enmod rewrite headers expires
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy composer files first for better caching
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Copy application code
+COPY . .
+
+# Run composer scripts after copying all files
+RUN composer run-script post-update-cmd || true
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+# Create files directory with proper permissions
+RUN mkdir -p /var/www/html/web/sites/default/files \
+    && chown -R www-data:www-data /var/www/html/web/sites/default/files \
+    && chmod -R 775 /var/www/html/web/sites/default/files
+
+# Create private files directory
+RUN mkdir -p /var/www/private \
+    && chown -R www-data:www-data /var/www/private \
+    && chmod -R 775 /var/www/private
+
+# Apache configuration
+RUN echo '<VirtualHost *:80>\n\
+    DocumentRoot /var/www/html/web\n\
+    <Directory /var/www/html/web>\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
+    ErrorLog ${APACHE_LOG_DIR}/error.log\n\
+    CustomLog ${APACHE_LOG_DIR}/access.log combined\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+# PHP configuration for production
+RUN echo 'memory_limit = 512M\n\
+upload_max_filesize = 64M\n\
+post_max_size = 64M\n\
+max_execution_time = 300\n\
+max_input_vars = 5000\n\
+realpath_cache_size = 4096K\n\
+realpath_cache_ttl = 600\n\
+opcache.enable=1\n\
+opcache.memory_consumption=256\n\
+opcache.interned_strings_buffer=16\n\
+opcache.max_accelerated_files=20000\n\
+opcache.validate_timestamps=0\n\
+opcache.save_comments=1\n\
+opcache.fast_shutdown=1' > /usr/local/etc/php/conf.d/drupal.ini
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Wait for database to be ready\n\
+echo "Waiting for database..."\n\
+until php -r "new PDO(\"pgsql:host=\$_ENV[DRUPAL_DATABASE_HOST];port=\$_ENV[DRUPAL_DATABASE_PORT];dbname=\$_ENV[DRUPAL_DATABASE_NAME]\", \$_ENV[DRUPAL_DATABASE_USER], \$_ENV[DRUPAL_DATABASE_PASSWORD]);" 2>/dev/null; do\n\
+    sleep 2\n\
+done\n\
+echo "Database is ready!"\n\
+\n\
+# Ensure files directory exists and has correct permissions\n\
+mkdir -p /var/www/html/web/sites/default/files\n\
+chown -R www-data:www-data /var/www/html/web/sites/default/files\n\
+\n\
+# Start Apache\n\
+exec apache2-foreground\n\
+' > /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

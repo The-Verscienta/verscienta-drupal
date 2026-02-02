@@ -8,6 +8,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  // Enable standalone output for Docker deployment
+  output: 'standalone',
+
   // Instrumentation hook is enabled by default in Next.js 15
   // See instrumentation.ts for env validation at startup
 

@@ -10,7 +10,7 @@ Complete step-by-step instructions for deploying Verscienta Health (Next.js fron
 2. [Architecture Overview](#architecture-overview)
 3. [Create Dockerfiles](#create-dockerfiles)
 4. [Coolify Setup](#coolify-setup)
-5. [Deploy PostgreSQL Database](#deploy-postgresql-database)
+5. [Deploy MySQL/MariaDB Database](#deploy-mysqlmariadb-database)
 6. [Deploy Redis](#deploy-redis)
 7. [Deploy Drupal Backend](#deploy-drupal-backend)
 8. [Deploy Next.js Frontend](#deploy-nextjs-frontend)
@@ -41,8 +41,8 @@ Before starting, ensure you have:
 │                                                              │
 │   ┌──────────────┐    ┌──────────────┐    ┌──────────────┐ │
 │   │   Frontend   │    │   Backend    │    │   Database   │ │
-│   │   (Next.js)  │───▶│   (Drupal)   │───▶│ (PostgreSQL) │ │
-│   │   Port 3000  │    │   Port 80    │    │  Port 5432   │ │
+│   │   (Next.js)  │───▶│   (Drupal)   │───▶│  (MariaDB)   │ │
+│   │   Port 3000  │    │   Port 80    │    │  Port 3306   │ │
 │   └──────────────┘    └──────────────┘    └──────────────┘ │
 │          │                   │                              │
 │          │                   ▼                              │
@@ -60,7 +60,7 @@ Before starting, ensure you have:
 ```
 
 **Services to deploy:**
-1. PostgreSQL 17 (Database)
+1. MariaDB 11 (Database)
 2. Redis 7 (Cache/Session)
 3. Drupal 11 (Backend API)
 4. Next.js 15 (Frontend)
@@ -84,11 +84,11 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    libpq-dev \
+    default-mysql-client \
     libzip-dev \
     zip \
     unzip \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip opcache \
+    && docker-php-ext-install pdo pdo_mysql mysqli mbstring exif pcntl bcmath gd zip opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -240,22 +240,22 @@ output: 'standalone',
 
 ---
 
-## Deploy PostgreSQL Database
+## Deploy MySQL/MariaDB Database
 
-### Step 6: Add PostgreSQL Service
+### Step 6: Add MariaDB Service
 
 1. In your environment, click **+ New Resource**
-2. Select **Database** → **PostgreSQL**
+2. Select **Database** → **MariaDB** (or MySQL)
 3. Configure:
-   - **Name:** `verscienta-postgres`
-   - **Version:** `17-alpine`
+   - **Name:** `verscienta-mariadb`
+   - **Version:** `11` (or `lts` for MySQL)
    - **Database Name:** `verscienta_health`
    - **Username:** `drupal_user`
    - **Password:** Generate a secure password (save it!)
 
 4. Click **Deploy**
 
-5. Note the **Internal URL** (e.g., `verscienta-postgres:5432`)
+5. Note the **Internal URL** (e.g., `verscienta-mariadb:3306`)
 
 ---
 
@@ -310,7 +310,7 @@ cd /var/www/html
   --site-name="Verscienta Health" \
   --account-name=admin \
   --account-pass=CHANGE_THIS_PASSWORD \
-  --db-url=pgsql://drupal_user:YOUR_DB_PASSWORD@verscienta-postgres:5432/verscienta_health \
+  --db-url=mysql://drupal_user:YOUR_DB_PASSWORD@verscienta-mariadb:3306/verscienta_health \
   -y
 
 # Enable required modules
@@ -362,8 +362,8 @@ Set these in Coolify for the Drupal backend:
 
 | Variable | Example Value | Description |
 |----------|---------------|-------------|
-| `DRUPAL_DATABASE_HOST` | `verscienta-postgres` | PostgreSQL service name |
-| `DRUPAL_DATABASE_PORT` | `5432` | Database port |
+| `DRUPAL_DATABASE_HOST` | `verscienta-mariadb` | MariaDB service name |
+| `DRUPAL_DATABASE_PORT` | `3306` | Database port |
 | `DRUPAL_DATABASE_NAME` | `verscienta_health` | Database name |
 | `DRUPAL_DATABASE_USER` | `drupal_user` | Database username |
 | `DRUPAL_DATABASE_PASSWORD` | `your-secure-password` | Database password |
@@ -480,12 +480,12 @@ This is handled automatically by Coolify's proxy.
 
 #### 1. Database Connection Failed
 
-**Symptoms:** Drupal can't connect to PostgreSQL
+**Symptoms:** Drupal can't connect to MariaDB
 
 **Solution:**
 ```bash
-# Check if PostgreSQL is running
-# In Coolify, check the postgres service status
+# Check if MariaDB is running
+# In Coolify, check the mariadb service status
 
 # Verify connection string
 ./vendor/bin/drush sql:cli
@@ -568,7 +568,7 @@ Add health check endpoints:
 
 ### Deployment
 
-- [ ] PostgreSQL deployed and accessible
+- [ ] MariaDB deployed and accessible
 - [ ] Redis deployed and accessible
 - [ ] Backend deployed and Drupal installed
 - [ ] Frontend deployed and building successfully
@@ -594,7 +594,7 @@ Add health check endpoints:
 
 Coolify can schedule automatic backups:
 
-1. Go to PostgreSQL service → **Backups**
+1. Go to MariaDB service → **Backups**
 2. Enable **Scheduled Backups**
 3. Set frequency (daily recommended)
 4. Configure S3 or local storage
@@ -603,7 +603,7 @@ Coolify can schedule automatic backups:
 
 ```bash
 # Export database
-pg_dump -h verscienta-postgres -U drupal_user verscienta_health > backup.sql
+mysqldump -h verscienta-mariadb -u drupal_user -p verscienta_health > backup.sql
 
 # Export Drupal files
 tar -czf files-backup.tar.gz /var/www/html/web/sites/default/files
@@ -629,7 +629,7 @@ Set in Coolify for each service:
 
 - **Frontend:** 512MB RAM, 0.5 CPU
 - **Backend:** 1GB RAM, 1 CPU
-- **PostgreSQL:** 1GB RAM, 1 CPU
+- **MariaDB:** 1GB RAM, 1 CPU
 - **Redis:** 256MB RAM, 0.25 CPU
 
 ---

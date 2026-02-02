@@ -4,6 +4,15 @@ import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { SortDropdown } from '@/components/ui/SortDropdown';
 import { ServerPagination, PaginationInfo } from '@/components/ui/ServerPagination';
+import {
+  PageWrapper,
+  LeafPattern,
+  BotanicalDivider,
+  Tag,
+  EmptyState,
+  DisclaimerBox,
+  BackLink,
+} from '@/components/ui/DesignSystem';
 
 // Use dynamic rendering to avoid build errors when backend is unavailable
 export const dynamic = 'force-dynamic';
@@ -96,14 +105,40 @@ function getHerbData(herb: Herb) {
   };
 }
 
-// Temperature badge colors
-const temperatureColors: Record<string, string> = {
-  hot: 'bg-red-100 text-red-700',
-  warm: 'bg-orange-100 text-orange-700',
-  neutral: 'bg-gray-100 text-gray-700',
-  cool: 'bg-blue-100 text-blue-700',
-  cold: 'bg-indigo-100 text-indigo-700',
+// Temperature styling for TCM energy
+const temperatureStyles: Record<string, { variant: 'earth' | 'sage' | 'gold' | 'warm' | 'muted'; label: string }> = {
+  hot: { variant: 'warm', label: 'Hot' },
+  warm: { variant: 'gold', label: 'Warm' },
+  neutral: { variant: 'muted', label: 'Neutral' },
+  cool: { variant: 'sage', label: 'Cool' },
+  cold: { variant: 'earth', label: 'Cold' },
 };
+
+// Decorative botanical card icon
+function HerbIcon() {
+  return (
+    <svg viewBox="0 0 48 48" className="w-full h-full" fill="none">
+      <circle cx="24" cy="24" r="20" fill="url(#herbGrad)" opacity="0.1" />
+      <path
+        d="M24 8c-4 8-12 12-12 20a12 12 0 0024 0c0-8-8-12-12-20z"
+        fill="url(#herbGrad)"
+        opacity="0.3"
+      />
+      <path
+        d="M24 12v24M20 18c2 2 4 4 4 8M28 18c-2 2-4 4-4 8"
+        stroke="url(#herbGrad)"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <defs>
+        <linearGradient id="herbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4a7c59" />
+          <stop offset="100%" stopColor="#6b8f71" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
 
 interface PageProps {
   searchParams: Promise<{ sort?: string; page?: string }>;
@@ -117,215 +152,235 @@ export default async function HerbsPage({ searchParams }: PageProps) {
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   // Count unique characteristics for filter display
-  const actionCounts: Record<string, number> = {};
   const temperatureCounts: Record<string, number> = {};
 
   herbs.forEach(herb => {
     const data = getHerbData(herb);
-    data.primaryActions.forEach(action => {
-      actionCounts[action] = (actionCounts[action] || 0) + 1;
-    });
     if (data.tcmTemperature) {
       temperatureCounts[data.tcmTemperature] = (temperatureCounts[data.tcmTemperature] || 0) + 1;
     }
   });
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Herbs' },
-        ]}
-        className="mb-6"
-      />
+    <PageWrapper>
+      {/* Hero Section with Botanical Background */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-earth-50 via-sage-50/50 to-cream-100 border-b border-earth-200/50">
+        <LeafPattern opacity={0.04} />
 
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold text-earth-800 mb-3">
-              Medicinal Herbs
-            </h1>
-            <p className="text-xl text-sage-700 max-w-2xl">
-              Discover the healing power of nature with our comprehensive database of medicinal herbs.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <SortDropdown options={SORT_OPTIONS} defaultValue="title" />
-            <PaginationInfo
-              currentPage={currentPage}
-              pageSize={PAGE_SIZE}
-              totalItems={total}
-            />
+        {/* Decorative blurred circles */}
+        <div className="absolute top-20 left-10 w-64 h-64 bg-sage-300/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-20 w-48 h-48 bg-earth-300/15 rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+          {/* Breadcrumbs */}
+          <Breadcrumbs
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Herbs' },
+            ]}
+            className="mb-8"
+          />
+
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sage-500 to-earth-600 flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
+                <span className="text-sage-600 font-medium tracking-wide uppercase text-sm">
+                  Botanical Collection
+                </span>
+              </div>
+
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-earth-900 mb-4 leading-tight">
+                Medicinal Herbs
+              </h1>
+
+              <p className="text-lg md:text-xl text-sage-700 leading-relaxed">
+                Discover the healing wisdom of nature through our carefully curated
+                database of traditional and evidence-based herbal remedies.
+              </p>
+
+              {/* TCM Temperature Legend */}
+              {Object.keys(temperatureCounts).length > 0 && (
+                <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-sage-600 font-medium mr-1">TCM Energy:</span>
+                  {Object.entries(temperatureCounts).map(([temp, count]) => {
+                    const style = temperatureStyles[temp.toLowerCase()] || { variant: 'muted' as const, label: temp };
+                    return (
+                      <Tag key={temp} variant={style.variant} size="sm">
+                        {style.label} ({count})
+                      </Tag>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Sort & Pagination Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-earth-200/50 shadow-sm">
+              <SortDropdown options={SORT_OPTIONS} defaultValue="title" />
+              <div className="hidden sm:block w-px h-8 bg-earth-200" />
+              <PaginationInfo
+                currentPage={currentPage}
+                pageSize={PAGE_SIZE}
+                totalItems={total}
+              />
+            </div>
           </div>
         </div>
-
-        {/* Quick filters/stats */}
-        {Object.keys(temperatureCounts).length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-gray-600 mr-2">TCM Temperature:</span>
-            {Object.entries(temperatureCounts).map(([temp, count]) => (
-              <span
-                key={temp}
-                className={`text-xs px-3 py-1 rounded-full font-medium ${temperatureColors[temp.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}
-              >
-                {temp} ({count})
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
-      {herbs.length === 0 ? (
-        <div className="bg-gradient-to-br from-earth-50 to-sage-50 rounded-2xl p-12 text-center border border-earth-200">
-          <div className="text-7xl mb-6">🌿</div>
-          <h2 className="text-2xl font-bold text-earth-800 mb-3">
-            No Herbs Found
-          </h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Our herb database is being populated. Check back soon or help us by adding herbs through the admin panel.
-          </p>
-          <a
-            href="https://backend.ddev.site/node/add/herb"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-earth-600 hover:bg-earth-700 text-white px-8 py-3 rounded-xl font-semibold transition"
-          >
-            Add Herbs
-          </a>
-        </div>
-      ) : (
-        <>
-          {/* Herbs Grid */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-            {herbs.map((herb) => {
-              const data = getHerbData(herb);
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {herbs.length === 0 ? (
+          <EmptyState
+            icon={
+              <svg className="w-16 h-16 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            }
+            title="No Herbs Found"
+            description="Our botanical library is being cultivated. Check back soon as we add more herbal wisdom to our collection."
+            action={
+              <a
+                href="https://backend.ddev.site/node/add/herb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-earth-600 to-sage-600 hover:from-earth-700 hover:to-sage-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                Add Herbs
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </a>
+            }
+          />
+        ) : (
+          <>
+            {/* Herbs Grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+              {herbs.map((herb) => {
+                const data = getHerbData(herb);
 
-              return (
-                <Link
-                  key={herb.id}
-                  href={`/herbs/${herb.id}`}
-                  className="group bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-earth-200 transition-all overflow-hidden"
-                >
-                  {/* Card Header with Icon */}
-                  <div className="bg-gradient-to-br from-earth-50 to-sage-50 p-6 border-b border-gray-100">
-                    <div className="flex items-start justify-between">
-                      <div className="w-14 h-14 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-3xl">🌿</span>
+                return (
+                  <Link
+                    key={herb.id}
+                    href={`/herbs/${herb.id}`}
+                    className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl border border-earth-100 hover:border-sage-300 transition-all duration-300 overflow-hidden"
+                  >
+                    {/* Decorative corner accent */}
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-sage-100/50 to-transparent rounded-bl-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Card Header */}
+                    <div className="relative bg-gradient-to-br from-cream-50 via-sage-50/30 to-earth-50/20 p-6 border-b border-earth-100/50">
+                      <div className="flex items-start justify-between">
+                        <div className="w-14 h-14 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                          <HerbIcon />
+                        </div>
+                        {data.tcmTemperature && (
+                          <Tag
+                            variant={temperatureStyles[data.tcmTemperature.toLowerCase()]?.variant || 'muted'}
+                            size="sm"
+                          >
+                            {data.tcmTemperature}
+                          </Tag>
+                        )}
                       </div>
-                      {data.tcmTemperature && (
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${temperatureColors[data.tcmTemperature.toLowerCase()] || 'bg-gray-100 text-gray-700'}`}>
-                          {data.tcmTemperature}
-                        </span>
-                      )}
                     </div>
-                  </div>
 
-                  {/* Card Body */}
-                  <div className="p-5">
-                    <h2 className="text-lg font-bold text-earth-800 mb-1 group-hover:text-earth-600 transition-colors">
-                      {data.title}
-                    </h2>
+                    {/* Card Body */}
+                    <div className="p-5">
+                      <h2 className="font-serif text-lg font-bold text-earth-800 mb-1 group-hover:text-sage-700 transition-colors">
+                        {data.title}
+                      </h2>
 
-                    {data.scientificName && (
-                      <p className="text-sm italic text-sage-600 mb-3">
-                        {data.scientificName}
-                      </p>
-                    )}
+                      {data.scientificName && (
+                        <p className="text-sm italic text-sage-600 mb-3 font-light">
+                          {data.scientificName}
+                        </p>
+                      )}
 
-                    {data.commonNames.length > 0 && (
-                      <div className="mb-3">
-                        <div className="flex flex-wrap gap-1">
+                      {data.commonNames.length > 0 && (
+                        <div className="mb-3 flex flex-wrap gap-1.5">
                           {data.commonNames.slice(0, 2).map((name, idx) => (
                             <span
                               key={idx}
-                              className="text-xs bg-sage-100 text-sage-700 px-2 py-0.5 rounded"
+                              className="text-xs bg-sage-50 text-sage-700 px-2 py-1 rounded-md border border-sage-100"
                             >
                               {name}
                             </span>
                           ))}
                           {data.commonNames.length > 2 && (
-                            <span className="text-xs text-gray-400">
-                              +{data.commonNames.length - 2}
+                            <span className="text-xs text-sage-400 py-1">
+                              +{data.commonNames.length - 2} more
                             </span>
                           )}
                         </div>
+                      )}
+
+                      {data.summary && (
+                        <p className="text-sm text-earth-600 line-clamp-2 mb-3 leading-relaxed">
+                          {data.summary}...
+                        </p>
+                      )}
+
+                      {data.primaryActions.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {data.primaryActions.slice(0, 2).map((action, idx) => (
+                            <Tag key={idx} variant="earth" size="sm">
+                              {action}
+                            </Tag>
+                          ))}
+                          {data.primaryActions.length > 2 && (
+                            <span className="text-xs text-earth-400 py-1">
+                              +{data.primaryActions.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-4 pt-4 border-t border-earth-100">
+                        <span className="text-sage-600 font-medium text-sm flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                          Explore Details
+                          <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </span>
                       </div>
-                    )}
-
-                    {data.summary && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                        {data.summary}...
-                      </p>
-                    )}
-
-                    {data.primaryActions.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {data.primaryActions.slice(0, 2).map((action, idx) => (
-                          <span
-                            key={idx}
-                            className="text-xs bg-earth-100 text-earth-700 px-2 py-0.5 rounded"
-                          >
-                            {action}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="mt-4 pt-3 border-t border-gray-100">
-                      <span className="text-earth-600 font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                        View Details
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <ServerPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              className="mb-12"
-            />
-          )}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mb-12">
+                <ServerPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                />
+              </div>
+            )}
 
-          {/* Newsletter Signup */}
-          <NewsletterSignup variant="card" className="mb-12" />
-        </>
-      )}
+            <BotanicalDivider className="mb-12" />
 
-      {/* Educational Note */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
-        <div className="flex items-start gap-3">
-          <span className="text-2xl">⚠️</span>
-          <div>
-            <h3 className="font-semibold text-yellow-800 mb-1">Educational Information</h3>
-            <p className="text-sm text-yellow-700">
-              The information provided here is for educational purposes only. Always consult with a qualified
-              healthcare provider or herbalist before using any herbs, especially if you are pregnant, nursing,
-              or taking medications.
-            </p>
-          </div>
+            {/* Newsletter Signup */}
+            <NewsletterSignup variant="card" className="mb-12" />
+          </>
+        )}
+
+        {/* Educational Disclaimer */}
+        <DisclaimerBox className="mb-8" />
+
+        {/* Back Link */}
+        <div className="text-center">
+          <BackLink href="/" label="Return to Home" />
         </div>
       </div>
-
-      {/* Back Link */}
-      <div className="text-center">
-        <Link
-          href="/"
-          className="text-sage-600 hover:text-sage-800 font-medium"
-        >
-          ← Back to Home
-        </Link>
-      </div>
-    </div>
+    </PageWrapper>
   );
 }

@@ -3,6 +3,14 @@ import Link from 'next/link';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SortDropdown } from '@/components/ui/SortDropdown';
 import { ServerPagination, PaginationInfo } from '@/components/ui/ServerPagination';
+import {
+  PageWrapper,
+  LeafPattern,
+  BotanicalDivider,
+  Tag,
+  EmptyState,
+  BackLink,
+} from '@/components/ui/DesignSystem';
 
 // Use dynamic rendering to avoid build errors when backend is unavailable
 export const dynamic = 'force-dynamic';
@@ -33,31 +41,44 @@ interface Modality {
   };
 }
 
-// Modality icons mapping
-const modalityIcons: Record<string, string> = {
-  acupuncture: '🪡',
-  'herbal medicine': '🌿',
-  massage: '💆',
-  yoga: '🧘',
-  meditation: '🧘‍♂️',
-  ayurveda: '🕉️',
-  naturopathy: '🌱',
-  homeopathy: '💧',
-  chiropractic: '🦴',
-  reiki: '✨',
-  aromatherapy: '🌸',
-  nutrition: '🥗',
-  default: '🧘',
-};
+// Modality SVG icon component
+function ModalityIcon({ type }: { type: string }) {
+  const lowerType = type.toLowerCase();
 
-function getModalityIcon(title: string): string {
-  const lowerTitle = title.toLowerCase();
-  for (const [key, icon] of Object.entries(modalityIcons)) {
-    if (lowerTitle.includes(key)) {
-      return icon;
-    }
+  // Choose gradient based on modality type
+  let gradientId = 'modalityGrad';
+  let color1 = '#4a7c59';
+  let color2 = '#6b8f71';
+
+  if (lowerType.includes('acupuncture') || lowerType.includes('chinese')) {
+    color1 = '#8B4513';
+    color2 = '#A0522D';
+  } else if (lowerType.includes('yoga') || lowerType.includes('meditation')) {
+    color1 = '#6B5B95';
+    color2 = '#967BB6';
+  } else if (lowerType.includes('massage') || lowerType.includes('bodywork')) {
+    color1 = '#708090';
+    color2 = '#778899';
   }
-  return modalityIcons.default;
+
+  return (
+    <svg viewBox="0 0 48 48" className="w-full h-full" fill="none">
+      <circle cx="24" cy="24" r="20" fill={`url(#${gradientId})`} opacity="0.1" />
+      <path
+        d="M24 12c-6 4-10 8-10 14a10 10 0 0020 0c0-6-4-10-10-14z"
+        fill={`url(#${gradientId})`}
+        opacity="0.25"
+      />
+      <circle cx="24" cy="22" r="6" stroke={`url(#${gradientId})`} strokeWidth="2" fill="none" />
+      <path d="M24 16v-4M24 32v4M18 22h-4M30 22h4" stroke={`url(#${gradientId})`} strokeWidth="2" strokeLinecap="round" />
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={color1} />
+          <stop offset="100%" stopColor={color2} />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
 }
 
 interface ModalitiesResult {
@@ -120,272 +141,280 @@ export default async function ModalitiesPage({ searchParams }: PageProps) {
     .slice(0, 6);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Modalities' },
-        ]}
-        className="mb-6"
-      />
+    <PageWrapper>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-sage-50 via-earth-50/50 to-cream-100 border-b border-sage-200/50">
+        <LeafPattern opacity={0.04} />
 
-      {/* Header */}
-      <div className="mb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold text-earth-800 mb-3">
-              Holistic Modalities
-            </h1>
-            <p className="text-xl text-sage-700 max-w-2xl">
-              Explore therapeutic practices and healing modalities for mind, body, and spirit wellness.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <SortDropdown options={SORT_OPTIONS} defaultValue="title" />
-            <PaginationInfo
-              currentPage={currentPage}
-              pageSize={PAGE_SIZE}
-              totalItems={total}
-            />
+        {/* Decorative elements */}
+        <div className="absolute top-16 left-16 w-56 h-56 bg-sage-300/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-earth-300/20 rounded-full blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+          <Breadcrumbs
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Modalities' },
+            ]}
+            className="mb-8"
+          />
+
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-sage-500 to-sage-700 flex items-center justify-center shadow-lg">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <span className="text-sage-600 font-medium tracking-wide uppercase text-sm">
+                  Healing Practices
+                </span>
+              </div>
+
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-earth-900 mb-4 leading-tight">
+                Holistic Modalities
+              </h1>
+
+              <p className="text-lg md:text-xl text-sage-700 leading-relaxed">
+                Explore therapeutic practices and healing modalities that nurture mind, body, and spirit
+                through time-honored wisdom and modern understanding.
+              </p>
+
+              {/* Category highlights */}
+              {topCategories.length > 0 && (
+                <div className="mt-6 flex flex-wrap items-center gap-2">
+                  <span className="text-sm text-sage-600 font-medium mr-1">Popular for:</span>
+                  {topCategories.map(([category, count]) => (
+                    <Tag key={category} variant="sage" size="sm">
+                      {category} ({count})
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-sage-200/50 shadow-sm">
+              <SortDropdown options={SORT_OPTIONS} defaultValue="title" />
+              <div className="hidden sm:block w-px h-8 bg-sage-200" />
+              <PaginationInfo
+                currentPage={currentPage}
+                pageSize={PAGE_SIZE}
+                totalItems={total}
+              />
+            </div>
           </div>
         </div>
-
-        {/* Category highlights */}
-        {topCategories.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <span className="text-sm text-gray-600 mr-2">Popular for:</span>
-            {topCategories.map(([category, count]) => (
-              <span
-                key={category}
-                className="text-xs px-3 py-1 rounded-full bg-sage-100 text-sage-700 font-medium"
-              >
-                {category} ({count})
-              </span>
-            ))}
-          </div>
-        )}
       </div>
 
-      {modalities.length === 0 ? (
-        <div className="bg-gradient-to-br from-sage-50 to-earth-50 rounded-2xl p-12 text-center border border-sage-200">
-          <div className="text-7xl mb-6">🧘</div>
-          <h2 className="text-2xl font-bold text-earth-800 mb-3">
-            No Modalities Found
-          </h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            Our modalities database is being populated. Check back soon for holistic health practices.
-          </p>
-          <a
-            href="https://backend.ddev.site/node/add/modality"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block bg-earth-600 hover:bg-earth-700 text-white px-8 py-3 rounded-xl font-semibold transition"
-          >
-            Add Modalities
-          </a>
-        </div>
-      ) : (
-        <>
-          {/* Featured Section - Highlight top modalities */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {modalities.slice(0, 2).map((modality) => {
-              const summary = modality.body?.summary ||
-                modality.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 200);
-              const icon = getModalityIcon(modality.title);
-
-              return (
-                <Link
-                  key={modality.id}
-                  href={`/modalities/${modality.id}`}
-                  className="group bg-gradient-to-br from-sage-50 to-earth-50 rounded-2xl p-8 border border-sage-200 hover:border-sage-300 hover:shadow-lg transition-all"
-                >
-                  <div className="flex items-start gap-5">
-                    <div className="w-16 h-16 bg-white rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <span className="text-4xl">{icon}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-2xl font-bold text-earth-800 mb-2 group-hover:text-earth-600 transition-colors">
-                        {modality.title}
-                      </h2>
-                      {summary && (
-                        <p className="text-gray-600 mb-4 line-clamp-2">
-                          {summary}...
-                        </p>
-                      )}
-                      {modality.field_excels_at && modality.field_excels_at.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {modality.field_excels_at.slice(0, 4).map((item, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs bg-white/70 text-sage-700 px-3 py-1 rounded-full"
-                            >
-                              {item}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-4 text-sage-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Explore this modality
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* All Modalities Grid */}
-          <h2 className="text-2xl font-bold text-earth-800 mb-6">All Modalities</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-            {modalities.slice(2).map((modality) => {
-              const summary = modality.body?.summary ||
-                modality.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 100);
-              const icon = getModalityIcon(modality.title);
-
-              return (
-                <Link
-                  key={modality.id}
-                  href={`/modalities/${modality.id}`}
-                  className="group bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-sage-200 transition-all p-6"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <span className="text-2xl">{icon}</span>
-                    </div>
-                    {modality.field_excels_at && modality.field_excels_at.length > 0 && (
-                      <span className="text-xs bg-sage-100 text-sage-700 px-2 py-1 rounded-full">
-                        {modality.field_excels_at.length} benefits
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="text-lg font-bold text-earth-800 mb-2 group-hover:text-earth-600 transition-colors">
-                    {modality.title}
-                  </h3>
-
-                  {summary && (
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {summary}...
-                    </p>
-                  )}
-
-                  {modality.field_excels_at && modality.field_excels_at.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {modality.field_excels_at.slice(0, 2).map((item, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded"
-                        >
-                          {item}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="pt-3 border-t border-gray-100">
-                    <span className="text-sage-600 font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
-                      Learn More
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* If only 2 or fewer modalities, show the grid for all */}
-          {modalities.length <= 2 && modalities.length > 0 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-              {modalities.map((modality) => {
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {modalities.length === 0 ? (
+          <EmptyState
+            icon={
+              <svg className="w-16 h-16 text-sage-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            }
+            title="No Modalities Found"
+            description="Our healing modalities database is being curated. Check back soon for comprehensive information on holistic practices."
+            action={
+              <a
+                href="https://backend.ddev.site/node/add/modality"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-sage-600 to-earth-600 hover:from-sage-700 hover:to-earth-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl"
+              >
+                Add Modalities
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </a>
+            }
+          />
+        ) : (
+          <>
+            {/* Featured Modalities */}
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              {modalities.slice(0, 2).map((modality) => {
                 const summary = modality.body?.summary ||
-                  modality.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 100);
-                const icon = getModalityIcon(modality.title);
+                  modality.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 200);
 
                 return (
                   <Link
                     key={modality.id}
                     href={`/modalities/${modality.id}`}
-                    className="group bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-sage-200 transition-all p-6"
+                    className="group relative bg-gradient-to-br from-cream-50 via-sage-50/50 to-earth-50/30 rounded-2xl p-8 border border-sage-200 hover:border-sage-300 hover:shadow-xl transition-all duration-300 overflow-hidden"
                   >
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-12 h-12 bg-sage-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-2xl">{icon}</span>
+                    {/* Decorative corner */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-sage-100/40 to-transparent rounded-bl-[4rem]" />
+
+                    <div className="relative flex items-start gap-5">
+                      <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                        <ModalityIcon type={modality.title} />
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="font-serif text-2xl font-bold text-earth-800 mb-2 group-hover:text-sage-700 transition-colors">
+                          {modality.title}
+                        </h2>
+                        {summary && (
+                          <p className="text-earth-600 mb-4 line-clamp-2 leading-relaxed">
+                            {summary}...
+                          </p>
+                        )}
+                        {modality.field_excels_at && modality.field_excels_at.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {modality.field_excels_at.slice(0, 4).map((item, idx) => (
+                              <Tag key={idx} variant="muted" size="sm">
+                                {item}
+                              </Tag>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <h3 className="text-lg font-bold text-earth-800 mb-2">
-                      {modality.title}
-                    </h3>
-                    {summary && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                        {summary}...
-                      </p>
-                    )}
-                    <span className="text-sage-600 font-medium text-sm">
-                      Learn More →
-                    </span>
+                    <div className="mt-6 text-sage-600 font-medium flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                      Explore this modality
+                      <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </div>
                   </Link>
                 );
               })}
             </div>
-          )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <ServerPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              className="mb-12"
-            />
-          )}
+            {/* All Modalities Grid */}
+            {modalities.length > 2 && (
+              <>
+                <h2 className="font-serif text-2xl font-bold text-earth-800 mb-6">All Modalities</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+                  {modalities.slice(2).map((modality) => {
+                    const summary = modality.body?.summary ||
+                      modality.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 100);
 
-          {/* CTA Section */}
-          <div className="bg-gradient-to-r from-sage-600 to-earth-600 rounded-2xl p-8 md:p-12 text-white text-center mb-8">
-            <h2 className="text-3xl font-serif font-bold mb-4">
-              Find the Right Practitioner
-            </h2>
-            <p className="text-white/80 mb-6 max-w-2xl mx-auto">
-              Ready to try a holistic modality? Connect with verified practitioners
-              who specialize in these healing arts.
-            </p>
-            <Link
-              href="/practitioners"
-              className="inline-block bg-white text-earth-800 px-8 py-3 rounded-xl font-semibold hover:bg-earth-50 transition shadow-lg"
-            >
-              Browse Practitioners
-            </Link>
-          </div>
-        </>
-      )}
+                    return (
+                      <Link
+                        key={modality.id}
+                        href={`/modalities/${modality.id}`}
+                        className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl border border-earth-100 hover:border-sage-300 transition-all duration-300 overflow-hidden"
+                      >
+                        {/* Decorative corner accent */}
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-sage-100/50 to-transparent rounded-bl-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
 
-      {/* Educational Note */}
-      <div className="bg-sage-50 border border-sage-200 rounded-xl p-6 mb-8">
-        <div className="flex items-start gap-3">
-          <span className="text-2xl">💡</span>
-          <div>
-            <h3 className="font-semibold text-sage-800 mb-1">Finding Your Path</h3>
-            <p className="text-sm text-sage-700">
-              Each modality offers unique benefits and approaches to wellness. Consider trying multiple
-              modalities to find what resonates best with your body and health goals.
-            </p>
+                        <div className="relative bg-gradient-to-br from-sage-50/50 via-cream-50/30 to-earth-50/20 p-6 border-b border-earth-100/50">
+                          <div className="flex items-start justify-between">
+                            <div className="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center group-hover:scale-110 transition-all duration-300">
+                              <ModalityIcon type={modality.title} />
+                            </div>
+                            {modality.field_excels_at && modality.field_excels_at.length > 0 && (
+                              <Tag variant="sage" size="sm">
+                                {modality.field_excels_at.length} benefits
+                              </Tag>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-5">
+                          <h3 className="font-serif text-lg font-bold text-earth-800 mb-2 group-hover:text-sage-700 transition-colors">
+                            {modality.title}
+                          </h3>
+
+                          {summary && (
+                            <p className="text-sm text-earth-600 mb-4 line-clamp-2 leading-relaxed">
+                              {summary}...
+                            </p>
+                          )}
+
+                          {modality.field_excels_at && modality.field_excels_at.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                              {modality.field_excels_at.slice(0, 2).map((item, idx) => (
+                                <Tag key={idx} variant="muted" size="sm">
+                                  {item}
+                                </Tag>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="pt-4 border-t border-earth-100">
+                            <span className="text-sage-600 font-medium text-sm flex items-center gap-1.5 group-hover:gap-3 transition-all">
+                              Learn More
+                              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mb-12">
+                <ServerPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                />
+              </div>
+            )}
+
+            <BotanicalDivider className="mb-12" />
+
+            {/* CTA Section */}
+            <div className="relative bg-gradient-to-r from-sage-600 via-sage-700 to-earth-700 rounded-2xl p-8 md:p-12 text-white text-center mb-12 overflow-hidden">
+              <div className="absolute inset-0 opacity-10">
+                <LeafPattern opacity={0.3} />
+              </div>
+              <div className="relative">
+                <h2 className="font-serif text-3xl font-bold mb-4">
+                  Find the Right Practitioner
+                </h2>
+                <p className="text-white/80 mb-6 max-w-2xl mx-auto leading-relaxed">
+                  Ready to experience a holistic modality? Connect with verified practitioners
+                  who specialize in these time-honored healing arts.
+                </p>
+                <Link
+                  href="/practitioners"
+                  className="inline-flex items-center gap-2 bg-white text-earth-800 px-8 py-3 rounded-xl font-semibold hover:bg-cream-50 transition-all shadow-lg hover:shadow-xl"
+                >
+                  Browse Practitioners
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Guidance Box */}
+        <div className="bg-gradient-to-r from-sage-50 to-earth-50 border border-sage-200 rounded-xl p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-serif font-semibold text-sage-800 mb-1">Finding Your Path</h3>
+              <p className="text-sm text-sage-700 leading-relaxed">
+                Each modality offers unique benefits and approaches to wellness. Consider trying multiple
+                modalities to discover what resonates best with your body and health goals.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Back Link */}
-      <div className="text-center">
-        <Link
-          href="/"
-          className="text-sage-600 hover:text-sage-800 font-medium"
-        >
-          ← Back to Home
-        </Link>
+        {/* Back Link */}
+        <div className="text-center">
+          <BackLink href="/" label="Return to Home" />
+        </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }

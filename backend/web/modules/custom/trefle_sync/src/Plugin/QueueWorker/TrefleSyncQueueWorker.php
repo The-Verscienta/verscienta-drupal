@@ -86,24 +86,29 @@ class TrefleSyncQueueWorker extends QueueWorkerBase implements ContainerFactoryP
     $trefleId = (int) $data['trefle_id'];
 
     try {
-      $result = $this->trefleSyncService->importPlant($trefleId);
+      // Check if plant already exists to determine if this is an update.
+      $existingNode = $this->trefleSyncService->findExistingHerb($trefleId);
 
-      if ($result['status'] === 'imported') {
-        $this->logger->info('Cron imported plant @id: @title', [
-          '@id' => $trefleId,
-          '@title' => $result['node']->getTitle(),
-        ]);
+      $node = $this->trefleSyncService->importPlant($trefleId);
+
+      if ($node !== NULL) {
+        if ($existingNode) {
+          $this->logger->info('Cron updated plant @id: @title', [
+            '@id' => $trefleId,
+            '@title' => $node->getTitle(),
+          ]);
+        }
+        else {
+          $this->logger->info('Cron imported plant @id: @title', [
+            '@id' => $trefleId,
+            '@title' => $node->getTitle(),
+          ]);
+        }
       }
-      elseif ($result['status'] === 'updated') {
-        $this->logger->info('Cron updated plant @id: @title', [
-          '@id' => $trefleId,
-          '@title' => $result['node']->getTitle(),
-        ]);
-      }
-      elseif ($result['status'] === 'skipped') {
+      else {
         $this->logger->notice('Cron skipped plant @id: @reason', [
           '@id' => $trefleId,
-          '@reason' => $result['message'] ?? 'Already exists or filtered',
+          '@reason' => 'Already exists, filtered, or no benefits detected',
         ]);
       }
     }

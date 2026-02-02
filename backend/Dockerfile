@@ -90,7 +90,7 @@ set -e\n\
 \n\
 # Wait for database to be ready\n\
 echo "Waiting for database..."\n\
-until php -r "new PDO(\"pgsql:host=\$_ENV[DRUPAL_DATABASE_HOST];port=\$_ENV[DRUPAL_DATABASE_PORT];dbname=\$_ENV[DRUPAL_DATABASE_NAME]\", \$_ENV[DRUPAL_DATABASE_USER], \$_ENV[DRUPAL_DATABASE_PASSWORD]);" 2>/dev/null; do\n\
+until php -r "new PDO(\"pgsql:host=\".getenv(\"DRUPAL_DATABASE_HOST\").\";port=\".getenv(\"DRUPAL_DATABASE_PORT\").\";dbname=\".getenv(\"DRUPAL_DATABASE_NAME\"), getenv(\"DRUPAL_DATABASE_USER\"), getenv(\"DRUPAL_DATABASE_PASSWORD\"));" 2>/dev/null; do\n\
     sleep 2\n\
 done\n\
 echo "Database is ready!"\n\

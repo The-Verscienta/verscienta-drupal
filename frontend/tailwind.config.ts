@@ -64,6 +64,25 @@ const config: Config = {
           800: '#85602e',
           900: '#644817',
         },
+        // Cream (Warm backgrounds)
+        cream: {
+          50: '#fffef9',
+          100: '#fefcf3',
+          200: '#faf6e8',
+          300: '#f5edd8',
+          400: '#efe4c8',
+        },
+        // Warm (Warnings, TCM hot)
+        warm: {
+          50: '#fef7f6',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#c25b56',
+          600: '#dc2626',
+          700: '#991b1b',
+        },
       },
       fontFamily: {
         sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],

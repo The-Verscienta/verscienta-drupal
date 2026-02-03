@@ -55,6 +55,15 @@ RUN mkdir -p /var/www/html/web/libraries/jquery-jsonview/dist \
     && curl -sL https://raw.githubusercontent.com/yesmeck/jquery-jsonview/master/dist/jquery.jsonview.css \
        -o /var/www/html/web/libraries/jquery-jsonview/dist/jquery.jsonview.css
 
+# Install JSON Editor library (max v5.x for compatibility)
+RUN mkdir -p /var/www/html/web/libraries/jsoneditor/dist \
+    && curl -sL https://cdn.jsdelivr.net/npm/jsoneditor@5.26.3/dist/jsoneditor.min.js \
+       -o /var/www/html/web/libraries/jsoneditor/dist/jsoneditor.min.js \
+    && curl -sL https://cdn.jsdelivr.net/npm/jsoneditor@5.26.3/dist/jsoneditor.min.css \
+       -o /var/www/html/web/libraries/jsoneditor/dist/jsoneditor.min.css \
+    && curl -sL https://cdn.jsdelivr.net/npm/jsoneditor@5.26.3/dist/jsoneditor-icons.svg \
+       -o /var/www/html/web/libraries/jsoneditor/dist/jsoneditor-icons.svg
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html

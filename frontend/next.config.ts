@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
   // See instrumentation.ts for env validation at startup
 
   images: {
-    domains: ['localhost', 'verscienta-health.local', 'backend.ddev.site'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -28,12 +27,17 @@ const nextConfig: NextConfig = {
         hostname: 'backend.ddev.site',
         pathname: '/sites/default/files/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'backend.verscienta.com',
+        pathname: '/sites/default/files/**',
+      },
     ],
   },
 
   // Environment variables available at runtime
   env: {
-    DRUPAL_BASE_URL: process.env.DRUPAL_BASE_URL || 'http://localhost:8080',
+    NEXT_PUBLIC_DRUPAL_BASE_URL: process.env.NEXT_PUBLIC_DRUPAL_BASE_URL || 'http://localhost:8080',
     DRUPAL_CLIENT_ID: process.env.DRUPAL_CLIENT_ID || '',
     DRUPAL_CLIENT_SECRET: process.env.DRUPAL_CLIENT_SECRET || '',
     XAI_API_KEY: process.env.XAI_API_KEY || '',

@@ -45,49 +45,18 @@ COPY . .
 # Run composer scripts after copying all files
 RUN composer run-script post-update-cmd || true
 
-# Enable settings.local.php include and create it with production settings
-RUN sed -i 's/^# if (file_exists.*settings\.local\.php.*/if (file_exists($app_root . "\/" . $site_path . "\/settings.local.php")) {/' \
+# Create settings.php from default template (settings.php is gitignored)
+# and enable settings.local.php include
+RUN cp /var/www/html/web/sites/default/default.settings.php \
+       /var/www/html/web/sites/default/settings.php \
+    && sed -i 's/^# if (file_exists.*settings\.local\.php.*/if (file_exists($app_root . "\/" . $site_path . "\/settings.local.php")) {/' \
        /var/www/html/web/sites/default/settings.php \
     && sed -i 's/^#   include.*settings\.local\.php.*/  include $app_root . "\/" . $site_path . "\/settings.local.php";/' \
        /var/www/html/web/sites/default/settings.php \
-    && sed -i 's/^# }$/}/' /var/www/html/web/sites/default/settings.php \
-    && printf '%s\n' \
-       '<?php' \
-       '' \
-       '// Private file path' \
-       "\$settings['file_private_path'] = '/var/www/private';" \
-       '' \
-       '// Database configuration from environment variables' \
-       'if (getenv("DRUPAL_DATABASE_HOST")) {' \
-       '  $databases["default"]["default"] = [' \
-       "    'database' => getenv('DRUPAL_DATABASE_NAME')," \
-       "    'username' => getenv('DRUPAL_DATABASE_USER')," \
-       "    'password' => getenv('DRUPAL_DATABASE_PASSWORD')," \
-       "    'host' => getenv('DRUPAL_DATABASE_HOST')," \
-       "    'port' => getenv('DRUPAL_DATABASE_PORT') ?: '3306'," \
-       "    'driver' => 'mysql'," \
-       "    'prefix' => ''," \
-       "    'collation' => 'utf8mb4_general_ci'," \
-       '  ];' \
-       '}' \
-       '' \
-       '// Hash salt from environment' \
-       'if (getenv("DRUPAL_HASH_SALT")) {' \
-       "  \$settings['hash_salt'] = getenv('DRUPAL_HASH_SALT');" \
-       '}' \
-       '' \
-       '// Trusted host patterns from environment' \
-       'if (getenv("TRUSTED_HOST_PATTERNS")) {' \
-       "  \$settings['trusted_host_patterns'] = explode(',', getenv('TRUSTED_HOST_PATTERNS'));" \
-       '}' \
-       '' \
-       '// Redis configuration from environment' \
-       'if (getenv("REDIS_HOST") && \Drupal::hasContainer() && \Drupal::service("module_handler")->moduleExists("redis")) {' \
-       "  \$settings['redis.connection']['host'] = getenv('REDIS_HOST');" \
-       "  \$settings['redis.connection']['port'] = getenv('REDIS_PORT') ?: '6379';" \
-       "  \$settings['cache']['default'] = 'cache.backend.redis';" \
-       '}' \
-       > /var/www/html/web/sites/default/settings.local.php
+    && sed -i 's/^# }$/}/' /var/www/html/web/sites/default/settings.php
+
+# Create settings.local.php with production configuration from env vars
+COPY docker/settings.local.php /var/www/html/web/sites/default/settings.local.php
 
 # Install jQuery JSONView library for JSON field display
 RUN mkdir -p /var/www/html/web/libraries/jquery-jsonview/dist \

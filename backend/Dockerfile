@@ -116,25 +116,9 @@ opcache.validate_timestamps=0\n\
 opcache.save_comments=1\n\
 opcache.fast_shutdown=1' > /usr/local/etc/php/conf.d/drupal.ini
 
-# Create entrypoint script
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Wait for database to be ready\n\
-echo "Waiting for database..."\n\
-until php -r "new PDO(\"mysql:host=\".getenv(\"DRUPAL_DATABASE_HOST\").\";port=\".getenv(\"DRUPAL_DATABASE_PORT\").\";dbname=\".getenv(\"DRUPAL_DATABASE_NAME\"), getenv(\"DRUPAL_DATABASE_USER\"), getenv(\"DRUPAL_DATABASE_PASSWORD\"));" 2>/dev/null; do\n\
-    sleep 2\n\
-done\n\
-echo "Database is ready!"\n\
-\n\
-# Ensure files directory exists and has correct permissions\n\
-mkdir -p /var/www/html/web/sites/default/files\n\
-chown -R www-data:www-data /var/www/html/web/sites/default/files\n\
-\n\
-# Start Apache\n\
-exec apache2-foreground\n\
-' > /usr/local/bin/docker-entrypoint.sh \
-    && chmod +x /usr/local/bin/docker-entrypoint.sh
+# Copy entrypoint script (handles settings.php at runtime, after volumes mount)
+COPY docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 80
 

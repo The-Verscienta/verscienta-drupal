@@ -21,6 +21,13 @@ export interface DrupalNode {
   };
 }
 
+// Drupal formatted text field (rich text from CKEditor)
+export interface DrupalFormattedText {
+  value: string;
+  format?: string | null;
+  processed?: string;
+}
+
 // Comprehensive Herb Entity
 export interface HerbEntity extends DrupalNode {
   type: 'node--herb';
@@ -57,7 +64,7 @@ export interface HerbEntity extends DrupalNode {
   };
 
   // Medicinal Information
-  field_therapeutic_uses?: string;
+  field_therapeutic_uses?: DrupalFormattedText;
   field_western_properties?: string[];
   field_active_constituents?: Array<{
     field_compound_name: string;
@@ -65,7 +72,7 @@ export interface HerbEntity extends DrupalNode {
     field_compound_percentage?: number;
     field_compound_effects?: string;
   }>;
-  field_pharmacological_effects?: string;
+  field_pharmacological_effects?: DrupalFormattedText;
   field_dosage_forms?: string[];
   field_recommended_dosage?: Array<{
     field_dosage_form: string;
@@ -74,13 +81,13 @@ export interface HerbEntity extends DrupalNode {
     field_dosage_population?: string;
     field_dosage_notes?: string;
   }>;
-  field_contraindications?: string;
+  field_contraindications?: DrupalFormattedText;
   field_drug_interactions?: Array<{
     field_drug_name: string;
     field_interaction_type: string;
     field_interaction_description: string;
   }>;
-  field_side_effects?: string;
+  field_side_effects?: DrupalFormattedText;
   field_toxicity_info?: {
     field_toxicity_level?: string;
     field_toxic_compounds?: string;
@@ -88,12 +95,12 @@ export interface HerbEntity extends DrupalNode {
   };
 
   // Cultural & Historical
-  field_traditional_american_uses?: string;
-  field_traditional_chinese_uses?: string;
-  field_native_american_uses?: string;
-  field_cultural_significance?: string;
-  field_ethnobotanical_notes?: string;
-  field_folklore?: string;
+  field_traditional_american_uses?: DrupalFormattedText;
+  field_traditional_chinese_uses?: DrupalFormattedText;
+  field_native_american_uses?: DrupalFormattedText;
+  field_cultural_significance?: DrupalFormattedText;
+  field_ethnobotanical_notes?: DrupalFormattedText;
+  field_folklore?: DrupalFormattedText;
 
   // Practical Information
   field_preparation_methods?: Array<{

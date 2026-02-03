@@ -762,11 +762,11 @@
   }
 
   .btn-pill-primary {
-    @apply btn-pill bg-gradient-to-r from-earth-600 to-sage-600 text-white hover:from-earth-700 hover:to-sage-700 shadow-md hover:shadow-lg;
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 bg-gradient-to-r from-earth-600 to-sage-600 text-white hover:from-earth-700 hover:to-sage-700 shadow-md hover:shadow-lg;
   }
 
   .btn-pill-secondary {
-    @apply btn-pill bg-white text-earth-700 border border-earth-200 hover:border-sage-300 hover:bg-earth-50;
+    @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 bg-white text-earth-700 border border-earth-200 hover:border-sage-300 hover:bg-earth-50;
   }
 
   /* Input with botanical styling */

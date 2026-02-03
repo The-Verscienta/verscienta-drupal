@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { Inter, Crimson_Pro, JetBrains_Mono, Noto_Serif_SC } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/layout/Header';
@@ -34,11 +35,15 @@ export const metadata: Metadata = {
   description: 'Comprehensive holistic health database covering modalities, herbs, and guided symptom diagnosis.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Reading headers makes this a dynamic route, ensuring the nonce
+  // from middleware is available to Next.js for inline script tags
+  await headers();
+
   return (
     <html lang="en" className={`${inter.variable} ${crimsonPro.variable} ${jetbrainsMono.variable} ${notoSerifSC.variable}`}>
       <body className="font-sans">

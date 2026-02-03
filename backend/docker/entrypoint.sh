@@ -29,6 +29,9 @@ chmod 644 "$SETTINGS_FILE"
 chmod 644 "$LOCAL_SETTINGS"
 chown www-data:www-data "$SETTINGS_FILE" "$LOCAL_SETTINGS"
 
+# Remove static robots.txt so the RobotsTxt module can serve a dynamic one
+rm -f /var/www/html/web/robots.txt
+
 # Ensure files directory exists and has correct permissions
 mkdir -p "${SETTINGS_DIR}/files"
 chown -R www-data:www-data "${SETTINGS_DIR}/files"

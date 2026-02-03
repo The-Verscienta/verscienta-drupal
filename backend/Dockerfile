@@ -45,6 +45,9 @@ COPY . .
 # Run composer scripts after copying all files
 RUN composer run-script post-update-cmd || true
 
+# Configure private file path for Drupal
+RUN echo '$settings['"'"'file_private_path'"'"'] = '"'"'/var/www/private'"'"';' >> /var/www/html/web/sites/default/settings.php
+
 # Install jQuery JSONView library for JSON field display
 RUN mkdir -p /var/www/html/web/libraries/jquery-jsonview/dist \
     && curl -sL https://raw.githubusercontent.com/yesmeck/jquery-jsonview/master/dist/jquery.jsonview.js \

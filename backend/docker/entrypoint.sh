@@ -40,6 +40,9 @@ chown -R www-data:www-data "${SETTINGS_DIR}/files"
 mkdir -p /var/www/private
 chown -R www-data:www-data /var/www/private
 
+# Ensure config sync directory exists
+mkdir -p /var/www/html/config/sync
+
 # Wait for database to be ready
 if [ -n "$DRUPAL_DATABASE_HOST" ]; then
   echo "Waiting for database..."
@@ -47,6 +50,29 @@ if [ -n "$DRUPAL_DATABASE_HOST" ]; then
     sleep 2
   done
   echo "Database is ready!"
+
+  # Apply any pending entity/field definition updates (e.g. Consumer entity)
+  cd /var/www/html
+  echo "Applying entity definition updates..."
+  php -r "
+    use Drupal\Core\DrupalKernel;
+    use Symfony\Component\HttpFoundation\Request;
+    require_once 'web/core/includes/bootstrap.inc';
+    \$autoloader = require_once 'web/autoload.php';
+    \$request = Request::createFromGlobals();
+    \$kernel = DrupalKernel::createFromRequest(\$request, \$autoloader, 'prod');
+    \$kernel->boot();
+    \$entity_definition_update_manager = \$kernel->getContainer()->get('entity.definition_update_manager');
+    if (\$entity_definition_update_manager->needsUpdates()) {
+      foreach (\$entity_definition_update_manager->getChangeSummary() as \$entity_type_id => \$changes) {
+        echo \"Updating: \$entity_type_id\n\";
+      }
+      \$entity_definition_update_manager->applyUpdates();
+      echo \"Entity updates applied.\n\";
+    } else {
+      echo \"No entity updates needed.\n\";
+    }
+  " 2>&1 || echo "Entity update check completed (non-fatal if failed)."
 fi
 
 # Start Apache

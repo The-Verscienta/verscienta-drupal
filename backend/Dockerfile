@@ -45,8 +45,14 @@ COPY . .
 # Run composer scripts after copying all files
 RUN composer run-script post-update-cmd || true
 
-# Configure private file path for Drupal
-RUN echo '$settings['"'"'file_private_path'"'"'] = '"'"'/var/www/private'"'"';' >> /var/www/html/web/sites/default/settings.php
+# Enable settings.local.php include and create it with production settings
+RUN sed -i 's/^# if (file_exists.*settings\.local\.php.*/if (file_exists($app_root . "\/" . $site_path . "\/settings.local.php")) {/' \
+       /var/www/html/web/sites/default/settings.php \
+    && sed -i 's/^#   include.*settings\.local\.php.*/  include $app_root . "\/" . $site_path . "\/settings.local.php";/' \
+       /var/www/html/web/sites/default/settings.php \
+    && sed -i 's/^# }$/}/' /var/www/html/web/sites/default/settings.php \
+    && printf "<?php\n\n\$settings['file_private_path'] = '/var/www/private';\n" \
+       > /var/www/html/web/sites/default/settings.local.php
 
 # Install jQuery JSONView library for JSON field display
 RUN mkdir -p /var/www/html/web/libraries/jquery-jsonview/dist \

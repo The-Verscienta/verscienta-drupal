@@ -8,13 +8,15 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libwebp-dev \
+    libavif-dev \
     libonig-dev \
     libxml2-dev \
     libpq-dev \
     libzip-dev \
     zip \
     unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-avif \
     && docker-php-ext-install pdo pdo_mysql mysqli mbstring exif pcntl bcmath gd zip opcache \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

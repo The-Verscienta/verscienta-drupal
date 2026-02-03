@@ -45,6 +45,13 @@ COPY . .
 # Run composer scripts after copying all files
 RUN composer run-script post-update-cmd || true
 
+# Install jQuery JSONView library for JSON field display
+RUN mkdir -p /var/www/html/web/libraries/jquery-jsonview/dist \
+    && curl -sL https://raw.githubusercontent.com/yesmeck/jquery-jsonview/master/dist/jquery.jsonview.js \
+       -o /var/www/html/web/libraries/jquery-jsonview/dist/jquery.jsonview.js \
+    && curl -sL https://raw.githubusercontent.com/yesmeck/jquery-jsonview/master/dist/jquery.jsonview.css \
+       -o /var/www/html/web/libraries/jquery-jsonview/dist/jquery.jsonview.css
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html

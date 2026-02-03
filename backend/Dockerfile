@@ -78,7 +78,8 @@ RUN echo '<VirtualHost *:80>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
 # PHP configuration for production
-RUN echo 'memory_limit = 512M\n\
+RUN echo 'output_buffering = 4096\n\
+memory_limit = 512M\n\
 upload_max_filesize = 64M\n\
 post_max_size = 64M\n\
 max_execution_time = 300\n\

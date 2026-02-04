@@ -158,6 +158,16 @@ export interface HerbEntity extends DrupalNode {
     title?: string;
   }>;
 
+  // Images (Cloudflare Images via JSON:API file entities)
+  field_images?: Array<{
+    id: string;
+    type: string;
+    uri?: { url: string; value?: string };
+    url?: string;
+    filename?: string;
+    meta?: { alt?: string; title?: string; width?: number; height?: number };
+  }>;
+
   // Metadata
   field_peer_review_status?: string;
   field_average_rating?: number;
@@ -198,6 +208,14 @@ export interface ConditionEntity extends DrupalNode {
 export interface PractitionerEntity extends DrupalNode {
   type: 'node--practitioner';
   field_name?: string;
+  field_images?: Array<{
+    id: string;
+    type: string;
+    uri?: { url: string; value?: string };
+    url?: string;
+    filename?: string;
+    meta?: { alt?: string; title?: string; width?: number; height?: number };
+  }>;
   field_practice_type?: 'solo' | 'group' | 'clinic' | 'hospital';
   field_address?: string;
   field_city?: string;
@@ -219,6 +237,56 @@ export interface PractitionerEntity extends DrupalNode {
     type: string;
     title?: string;
   }>;
+  field_clinic?: {
+    id: string;
+    type: string;
+    title?: string;
+  };
+}
+
+export interface ClinicEntity extends DrupalNode {
+  type: 'node--clinic';
+  field_images?: Array<{
+    id: string;
+    type: string;
+    uri?: { url: string; value?: string };
+    url?: string;
+    filename?: string;
+    meta?: { alt?: string; title?: string; width?: number; height?: number };
+  }>;
+  field_address?: string;
+  field_city?: string;
+  field_state?: string;
+  field_zip?: string;
+  field_latitude?: number;
+  field_longitude?: number;
+  field_phone?: string;
+  field_email?: string;
+  field_website?: string;
+  field_google_place_id?: string;
+  field_hours?: string;
+  field_practitioners?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+    field_name?: string;
+    field_credentials?: string;
+    field_images?: Array<{
+      id: string;
+      type: string;
+      uri?: { url: string; value?: string };
+      url?: string;
+      filename?: string;
+      meta?: { alt?: string; title?: string; width?: number; height?: number };
+    }>;
+  }>;
+  field_modalities?: Array<{
+    id: string;
+    type: string;
+    title?: string;
+  }>;
+  field_accepting_new_patients?: boolean;
+  field_insurance_accepted?: string[];
 }
 
 export interface SymptomEntity extends DrupalNode {
@@ -432,6 +500,10 @@ export function isConditionEntity(entity: DrupalNode): entity is ConditionEntity
 
 export function isPractitionerEntity(entity: DrupalNode): entity is PractitionerEntity {
   return entity.type === 'node--practitioner';
+}
+
+export function isClinicEntity(entity: DrupalNode): entity is ClinicEntity {
+  return entity.type === 'node--clinic';
 }
 
 export function isReviewEntity(entity: DrupalNode): entity is ReviewEntity {

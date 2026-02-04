@@ -13,14 +13,26 @@ use Drupal\node\NodeInterface;
 /**
  * Implements hook_entity_presave().
  *
- * Geocode practitioner addresses using OpenStreetMap Nominatim API.
+ * Geocode practitioner and clinic addresses using OpenStreetMap Nominatim API.
  */
 function holistic_hub_entity_presave(EntityInterface $entity) {
-  // Only process practitioner nodes.
-  if ($entity instanceof NodeInterface && $entity->bundle() === 'practitioner') {
+  // Only process practitioner and clinic nodes.
+  if ($entity instanceof NodeInterface && in_array($entity->bundle(), ['practitioner', 'clinic'])) {
     // Check if address fields exist and geocoding hasn't been done.
     if ($entity->hasField('field_address') && !$entity->get('field_address')->isEmpty()) {
-      $address = $entity->get('field_address')->value;
+      // Build full address from available fields.
+      $parts = [];
+      $parts[] = $entity->get('field_address')->value;
+      if ($entity->hasField('field_city') && !$entity->get('field_city')->isEmpty()) {
+        $parts[] = $entity->get('field_city')->value;
+      }
+      if ($entity->hasField('field_state') && !$entity->get('field_state')->isEmpty()) {
+        $parts[] = $entity->get('field_state')->value;
+      }
+      if ($entity->hasField('field_zip') && !$entity->get('field_zip')->isEmpty()) {
+        $parts[] = $entity->get('field_zip')->value;
+      }
+      $address = implode(', ', $parts);
 
       // Geocode the address if latitude/longitude fields are empty.
       if ($entity->hasField('field_latitude') && $entity->hasField('field_longitude')) {

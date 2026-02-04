@@ -1,5 +1,6 @@
 import { drupal } from '@/lib/drupal';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { SortDropdown } from '@/components/ui/SortDropdown';
@@ -58,6 +59,14 @@ function getModalityIcon(name: string): string {
   return modalityIcons.default;
 }
 
+function getPractitionerImage(practitioner: PractitionerEntity) {
+  const img = practitioner.field_images?.[0];
+  if (!img) return null;
+  const url = img.uri?.url || img.url;
+  if (!url) return null;
+  return { url, alt: img.meta?.alt || img.filename || practitioner.field_name || practitioner.title || 'Practitioner' };
+}
+
 interface PractitionersResult {
   practitioners: PractitionerEntity[];
   total: number;
@@ -72,6 +81,7 @@ async function getPractitioners(sort: string = '-created', page: number = 1): Pr
         'page[limit]': PAGE_SIZE,
         'page[offset]': offset,
         'filter[status]': 1,
+        'include': 'field_images,field_clinic',
       },
     });
 
@@ -191,6 +201,7 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {practitioners.slice(0, 2).map((practitioner) => {
               const icon = practiceTypeIcons[practitioner.field_practice_type || 'default'] || practiceTypeIcons.default;
+              const image = getPractitionerImage(practitioner);
 
               return (
                 <Link
@@ -199,8 +210,18 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
                   className="group bg-gradient-to-br from-sage-50 to-earth-50 rounded-2xl p-8 border border-sage-200 hover:border-sage-300 hover:shadow-lg transition-all"
                 >
                   <div className="flex items-start gap-5">
-                    <div className="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <span className="text-4xl">{icon}</span>
+                    <div className="relative w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform overflow-hidden flex-shrink-0">
+                      {image ? (
+                        <Image
+                          src={image.url}
+                          alt={image.alt}
+                          fill
+                          className="object-cover"
+                          sizes="80px"
+                        />
+                      ) : (
+                        <span className="text-4xl">{icon}</span>
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-start justify-between gap-3 mb-2">
@@ -221,12 +242,19 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
                       )}
 
                       {practitioner.field_address && (
-                        <p className="text-gray-600 mb-3 flex items-center gap-2">
+                        <p className="text-gray-600 mb-2 flex items-center gap-2">
                           <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
                           {practitioner.field_address}
+                        </p>
+                      )}
+
+                      {practitioner.field_clinic?.title && (
+                        <p className="text-sage-600 mb-3 flex items-center gap-2 text-sm">
+                          <span>🏥</span>
+                          {practitioner.field_clinic.title}
                         </p>
                       )}
 
@@ -265,6 +293,7 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {practitioners.slice(2).map((practitioner) => {
               const icon = practiceTypeIcons[practitioner.field_practice_type || 'default'] || practiceTypeIcons.default;
+              const image = getPractitionerImage(practitioner);
 
               return (
                 <Link
@@ -273,17 +302,38 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
                   className="group bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-sage-200 transition-all overflow-hidden"
                 >
                   {/* Card Header */}
-                  <div className="bg-gradient-to-br from-sage-50 to-earth-50 p-5 border-b border-gray-100">
-                    <div className="flex items-start justify-between">
-                      <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-2xl">{icon}</span>
+                  <div className="bg-gradient-to-br from-sage-50 to-earth-50 border-b border-gray-100">
+                    {image ? (
+                      <div className="relative w-full h-40 overflow-hidden">
+                        <Image
+                          src={image.url}
+                          alt={image.alt}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        />
+                        {practitioner.field_accepting_new_patients && (
+                          <div className="absolute top-3 right-3">
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 border border-green-200">
+                              Accepting
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      {practitioner.field_accepting_new_patients && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 border border-green-200">
-                          Accepting
-                        </span>
-                      )}
-                    </div>
+                    ) : (
+                      <div className="p-5">
+                        <div className="flex items-start justify-between">
+                          <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <span className="text-2xl">{icon}</span>
+                          </div>
+                          {practitioner.field_accepting_new_patients && (
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 border border-green-200">
+                              Accepting
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Card Body */}
@@ -299,12 +349,19 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
                     )}
 
                     {practitioner.field_address && (
-                      <p className="text-sm text-gray-600 mb-3 flex items-start gap-2">
+                      <p className="text-sm text-gray-600 mb-2 flex items-start gap-2">
                         <svg className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <span className="line-clamp-2">{practitioner.field_address}</span>
+                      </p>
+                    )}
+
+                    {practitioner.field_clinic?.title && (
+                      <p className="text-xs text-sage-600 mb-3 flex items-center gap-1.5">
+                        <span>🏥</span>
+                        <span className="truncate">{practitioner.field_clinic.title}</span>
                       </p>
                     )}
 
@@ -354,6 +411,7 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
               {practitioners.map((practitioner) => {
                 const icon = practiceTypeIcons[practitioner.field_practice_type || 'default'] || practiceTypeIcons.default;
+                const image = getPractitionerImage(practitioner);
 
                 return (
                   <Link
@@ -362,8 +420,18 @@ export default async function PractitionersPage({ searchParams }: PageProps) {
                     className="group bg-white rounded-xl shadow-sm hover:shadow-xl border border-gray-100 hover:border-sage-200 transition-all p-6"
                   >
                     <div className="flex items-start justify-between mb-4">
-                      <div className="w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <span className="text-2xl">{icon}</span>
+                      <div className="relative w-14 h-14 bg-sage-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
+                        {image ? (
+                          <Image
+                            src={image.url}
+                            alt={image.alt}
+                            fill
+                            className="object-cover"
+                            sizes="56px"
+                          />
+                        ) : (
+                          <span className="text-2xl">{icon}</span>
+                        )}
                       </div>
                       {practitioner.field_accepting_new_patients && (
                         <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700">

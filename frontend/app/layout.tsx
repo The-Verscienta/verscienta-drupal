@@ -147,6 +147,7 @@ export default async function RootLayout({
                     {[
                       { href: '/symptom-checker', label: 'Symptom Checker' },
                       { href: '/practitioners', label: 'Find Practitioners' },
+                      { href: '/clinics', label: 'Find Clinics' },
                       { href: '/search', label: 'Search Database' },
                       { href: '/faq', label: 'FAQ' },
                     ].map((link) => (

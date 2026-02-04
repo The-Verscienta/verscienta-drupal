@@ -1,9 +1,11 @@
 import { drupal } from '@/lib/drupal';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { PractitionerEntity } from '@/types/drupal';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SafeHtml } from '@/components/ui/SafeHtml';
+import { ClinicMap } from '@/components/clinic/ClinicMap';
 
 interface PractitionerDetailProps {
   params: Promise<{
@@ -15,7 +17,12 @@ async function getPractitioner(id: string): Promise<PractitionerEntity | null> {
   try {
     const practitioner = await drupal.getResource<PractitionerEntity>(
       'node--practitioner',
-      id
+      id,
+      {
+        params: {
+          'include': 'field_images,field_clinic',
+        },
+      }
     );
     return practitioner;
   } catch (error) {
@@ -55,10 +62,26 @@ export default async function PractitionerDetailPage({ params }: PractitionerDet
       />
 
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+        {/* Hero image */}
+        {practitioner.field_images?.[0] && (practitioner.field_images[0].uri?.url || practitioner.field_images[0].url) && (
+          <div className="relative w-full h-56 md:h-72">
+            <Image
+              src={practitioner.field_images[0].uri?.url || practitioner.field_images[0].url!}
+              alt={practitioner.field_images[0].meta?.alt || name}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 896px) 100vw, 896px"
+            />
+          </div>
+        )}
+        <div className="p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <div className="text-6xl mb-4">👨‍⚕️</div>
+            {!(practitioner.field_images?.[0] && (practitioner.field_images[0].uri?.url || practitioner.field_images[0].url)) && (
+              <div className="text-6xl mb-4">👨‍⚕️</div>
+            )}
             <h1 className="text-4xl font-bold text-earth-800 mb-2">{name}</h1>
             {practitioner.field_credentials && (
               <p className="text-lg text-sage-600">{practitioner.field_credentials}</p>
@@ -108,7 +131,56 @@ export default async function PractitionerDetailPage({ params }: PractitionerDet
             </div>
           )}
         </div>
+        </div>
       </div>
+
+      {/* Clinic Affiliation */}
+      {practitioner.field_clinic && (
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+          <h2 className="text-2xl font-bold text-earth-800 mb-4">Clinic Affiliation</h2>
+          <Link
+            href={`/clinics/${practitioner.field_clinic.id}`}
+            className="group flex items-center gap-4 p-4 rounded-lg border border-sage-200 hover:border-sage-400 hover:shadow-md transition-all bg-sage-50"
+          >
+            <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center flex-shrink-0">
+              <span className="text-2xl">🏥</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-earth-800 group-hover:text-earth-600 transition-colors">
+                {practitioner.field_clinic.title || 'View Clinic'}
+              </h3>
+              <p className="text-sm text-sage-600">View clinic details and other practitioners</p>
+            </div>
+            <svg className="w-5 h-5 text-gray-400 group-hover:text-sage-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      )}
+
+      {/* Image Gallery (if multiple images) */}
+      {practitioner.field_images && practitioner.field_images.length > 1 && (
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+          <h2 className="text-2xl font-bold text-earth-800 mb-4">Photos</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {practitioner.field_images.slice(1).map((image, idx) => {
+              const imgUrl = image.uri?.url || image.url;
+              if (!imgUrl) return null;
+              return (
+                <div key={image.id || idx} className="relative aspect-square rounded-xl overflow-hidden border border-earth-200 shadow-sm">
+                  <Image
+                    src={imgUrl}
+                    alt={image.meta?.alt || `${name} photo ${idx + 2}`}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 50vw, (max-width: 896px) 33vw, 250px"
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Contact Information */}
       <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
@@ -193,15 +265,22 @@ export default async function PractitionerDetailPage({ params }: PractitionerDet
         </div>
       )}
 
-      {/* Map placeholder */}
+      {/* Map */}
       {practitioner.field_latitude && practitioner.field_longitude && (
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
           <h2 className="text-2xl font-bold text-earth-800 mb-4">Location</h2>
-          <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
-            <p className="text-gray-500">
-              Map location: {practitioner.field_latitude}, {practitioner.field_longitude}
-            </p>
-          </div>
+          <ClinicMap
+            clinics={[{
+              id: practitioner.id,
+              title: name,
+              lat: practitioner.field_latitude,
+              lng: practitioner.field_longitude,
+              address: fullAddress || undefined,
+            }]}
+            singleClinic
+            zoom={15}
+            className="h-[300px] rounded-lg overflow-hidden"
+          />
         </div>
       )}
 

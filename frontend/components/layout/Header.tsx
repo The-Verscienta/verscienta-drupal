@@ -74,6 +74,7 @@ export function Header() {
 
   const resourceLinks = [
     { href: '/practitioners', label: 'Find Practitioners', icon: '👨‍⚕️' },
+    { href: '/clinics', label: 'Find Clinics', icon: '🏥' },
     { href: '/search', label: 'Search Database', icon: '🔍' },
     { href: '/about', label: 'About Us', icon: '📖' },
     { href: '/contact', label: 'Contact', icon: '✉️' },

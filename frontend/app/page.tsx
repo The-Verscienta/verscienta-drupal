@@ -459,7 +459,7 @@ export default function Home() {
             </p>
           </div>
 
-          <CardGrid columns={3}>
+          <CardGrid columns={4}>
             <FeatureCard
               icon="🏥"
               title="Health Conditions"
@@ -474,6 +474,14 @@ export default function Home() {
               description="Explore classical and modern herbal formulas combining multiple herbs for synergistic effects."
               href="/formulas"
               tags={['Classical', 'TCM', 'Combinations']}
+            />
+
+            <FeatureCard
+              icon="🏥"
+              title="Find Clinics"
+              description="Discover holistic health clinics near you with maps, reviews, practitioner teams, and insurance info."
+              href="/clinics"
+              tags={['Locations', 'Reviews', 'Insurance']}
             />
 
             <FeatureCard

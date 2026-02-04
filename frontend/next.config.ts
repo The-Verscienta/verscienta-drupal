@@ -32,6 +32,11 @@ const nextConfig: NextConfig = {
         hostname: 'backend.verscienta.com',
         pathname: '/sites/default/files/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'imagedelivery.net',
+        pathname: '/**',
+      },
     ],
   },
 

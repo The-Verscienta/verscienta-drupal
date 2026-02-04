@@ -1,6 +1,7 @@
 import { drupal } from '@/lib/drupal';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { HerbEntity, DrupalTextField } from '@/types/drupal';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { SafeHtml } from '@/components/ui/SafeHtml';
@@ -21,7 +22,11 @@ interface HerbDetailProps {
 
 async function getHerb(id: string): Promise<HerbEntity | null> {
   try {
-    const herb = await drupal.getResource<HerbEntity>('node--herb', id);
+    const herb = await drupal.getResource<HerbEntity>('node--herb', id, {
+      params: {
+        'include': 'field_images',
+      },
+    });
     return herb;
   } catch (error) {
     console.error('Failed to fetch herb:', error);
@@ -172,15 +177,28 @@ export default async function HerbDetailPage({ params }: HerbDetailProps) {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Main Info */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-3xl shadow-xl border border-earth-200 p-8 md:p-12 relative overflow-hidden">
-                {/* Decorative botanical illustration placeholder */}
-                <div className="absolute -right-12 -top-12 w-64 h-64 opacity-5">
-                  <svg viewBox="0 0 200 200" className="w-full h-full text-earth-600">
-                    <path d="M100 20c0 40-30 80-30 120s30 40 30 40 30 0 30-40-30-80-30-120z" fill="currentColor"/>
-                    <path d="M60 100c30-20 70-20 80 0" stroke="currentColor" strokeWidth="2" fill="none"/>
-                    <path d="M50 120c40-30 90-30 100 0" stroke="currentColor" strokeWidth="2" fill="none"/>
-                  </svg>
-                </div>
+              <div className="bg-white rounded-3xl shadow-xl border border-earth-200 relative overflow-hidden">
+                {/* Hero image or decorative fallback */}
+                {herb.field_images?.[0] && (herb.field_images[0].uri?.url || herb.field_images[0].url) ? (
+                  <div className="relative w-full h-64 md:h-80">
+                    <Image
+                      src={herb.field_images[0].uri?.url || herb.field_images[0].url!}
+                      alt={herb.field_images[0].meta?.alt || name}
+                      fill
+                      priority
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 66vw"
+                    />
+                  </div>
+                ) : (
+                  <div className="absolute -right-12 -top-12 w-64 h-64 opacity-5">
+                    <svg viewBox="0 0 200 200" className="w-full h-full text-earth-600">
+                      <path d="M100 20c0 40-30 80-30 120s30 40 30 40 30 0 30-40-30-80-30-120z" fill="currentColor"/>
+                      <path d="M60 100c30-20 70-20 80 0" stroke="currentColor" strokeWidth="2" fill="none"/>
+                      <path d="M50 120c40-30 90-30 100 0" stroke="currentColor" strokeWidth="2" fill="none"/>
+                    </svg>
+                  </div>
+                )}
 
                 {/* Conservation status badge */}
                 {herb.field_conservation_status && (
@@ -198,7 +216,7 @@ export default async function HerbDetailPage({ params }: HerbDetailProps) {
                   </div>
                 )}
 
-                <div className="relative">
+                <div className="relative p-8 md:p-12">
                   {/* Common name */}
                   <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl font-bold text-earth-900 mb-4 tracking-tight">
                     {name}
@@ -258,6 +276,27 @@ export default async function HerbDetailPage({ params }: HerbDetailProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Image Gallery (if multiple images) */}
+              {herb.field_images && herb.field_images.length > 1 && (
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {herb.field_images.slice(1).map((image, idx) => {
+                    const imgUrl = image.uri?.url || image.url;
+                    if (!imgUrl) return null;
+                    return (
+                      <div key={image.id || idx} className="relative aspect-square rounded-xl overflow-hidden border border-earth-200 shadow-sm">
+                        <Image
+                          src={imgUrl}
+                          alt={image.meta?.alt || `${name} image ${idx + 2}`}
+                          fill
+                          className="object-cover hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Sidebar - Table of Contents */}

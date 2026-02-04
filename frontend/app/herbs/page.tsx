@@ -1,5 +1,6 @@
 import { drupal } from '@/lib/drupal';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Breadcrumbs } from '@/components/ui/Breadcrumbs';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { SortDropdown } from '@/components/ui/SortDropdown';
@@ -48,6 +49,14 @@ interface Herb {
   field_common_names?: string[];
   field_primary_actions?: string[];
   field_tcm_temperature?: string;
+  field_images?: Array<{
+    id: string;
+    type: string;
+    uri?: { url: string; value?: string };
+    url?: string;
+    filename?: string;
+    meta?: { alt?: string; title?: string; width?: number; height?: number };
+  }>;
   body?: {
     value: string;
     summary?: string;
@@ -69,6 +78,7 @@ async function getHerbs(sort: string = 'title', page: number = 1): Promise<Herbs
         'page[limit]': PAGE_SIZE,
         'page[offset]': offset,
         'filter[status]': 1,
+        'include': 'field_images',
       },
     });
 
@@ -102,6 +112,8 @@ function getHerbData(herb: Herb) {
     tcmTemperature: herb.field_tcm_temperature,
     summary: herb.body?.summary || herb.body?.processed?.replace(/<[^>]*>/g, '').slice(0, 150) ||
              herb.attributes?.body?.summary,
+    imageUrl: herb.field_images?.[0]?.uri?.url || herb.field_images?.[0]?.url || null,
+    imageAlt: herb.field_images?.[0]?.meta?.alt || herb.field_images?.[0]?.filename || null,
   };
 }
 
@@ -275,20 +287,44 @@ export default async function HerbsPage({ searchParams }: PageProps) {
                     <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-sage-100/50 to-transparent rounded-bl-[3rem] opacity-0 group-hover:opacity-100 transition-opacity" />
 
                     {/* Card Header */}
-                    <div className="relative bg-gradient-to-br from-cream-50 via-sage-50/30 to-earth-50/20 p-6 border-b border-earth-100/50">
-                      <div className="flex items-start justify-between">
-                        <div className="w-14 h-14 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
-                          <HerbIcon />
+                    <div className="relative bg-gradient-to-br from-cream-50 via-sage-50/30 to-earth-50/20 border-b border-earth-100/50">
+                      {data.imageUrl ? (
+                        <div className="relative w-full h-48 overflow-hidden">
+                          <Image
+                            src={data.imageUrl}
+                            alt={data.imageAlt || data.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                          />
+                          {data.tcmTemperature && (
+                            <div className="absolute top-3 right-3">
+                              <Tag
+                                variant={temperatureStyles[data.tcmTemperature.toLowerCase()]?.variant || 'muted'}
+                                size="sm"
+                              >
+                                {data.tcmTemperature}
+                              </Tag>
+                            </div>
+                          )}
                         </div>
-                        {data.tcmTemperature && (
-                          <Tag
-                            variant={temperatureStyles[data.tcmTemperature.toLowerCase()]?.variant || 'muted'}
-                            size="sm"
-                          >
-                            {data.tcmTemperature}
-                          </Tag>
-                        )}
-                      </div>
+                      ) : (
+                        <div className="p-6">
+                          <div className="flex items-start justify-between">
+                            <div className="w-14 h-14 rounded-xl bg-white shadow-md flex items-center justify-center group-hover:scale-110 group-hover:shadow-lg transition-all duration-300">
+                              <HerbIcon />
+                            </div>
+                            {data.tcmTemperature && (
+                              <Tag
+                                variant={temperatureStyles[data.tcmTemperature.toLowerCase()]?.variant || 'muted'}
+                                size="sm"
+                              >
+                                {data.tcmTemperature}
+                              </Tag>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Card Body */}

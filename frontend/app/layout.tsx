@@ -33,6 +33,14 @@ const notoSerifSC = Noto_Serif_SC({
 export const metadata: Metadata = {
   title: 'Verscienta Health - Holistic Health Database',
   description: 'Comprehensive holistic health database covering modalities, herbs, and guided symptom diagnosis.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/apple-icon.svg', type: 'image/svg+xml' },
+    ],
+  },
 };
 
 export default async function RootLayout({
